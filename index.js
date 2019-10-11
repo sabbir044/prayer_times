@@ -22,35 +22,49 @@ function startJS() {
 }
 
 function loadFile() {
+    var fs = require('fs');
+    fs.readFile('prayer_times.json', 'utf8', function(err, data) {
+        jsonObj = JSON.parse(data);
+        console.log(jsonObj);
+        if (jsonObj != null)
+            startTime();
+    });
+    /*
     $.getJSON('prayer_times.json', function(data) {
         jsonObj = data;
         console.log(jsonObj);
         if (jsonObj != null)
             startTime();
     });
-
+    */
 
 }
 
+function getFormattedTimes(today) {
+    var t = {}
+    h = today.getHours();
+    m = today.getMinutes();
+    s = today.getSeconds();
+    t.h = checkTime(h);
+    t.m = checkTime(m);
+    t.s = checkTime(s);
+    t.YY = today.getFullYear();
+    t.mm = today.getMonth() + 1;
+    t.dd = today.getDate();
+    t.MM = checkTime(t.mm);
+    t.DD = checkTime(t.dd);
+    t.date = today
+    return t;
+}
+
 function renderCurrentTime() {
-    var today = new Date();
-    var h = today.getHours();
-    var m = today.getMinutes();
-    var s = today.getSeconds();
-    h = checkTime(h);
-    m = checkTime(m);
-    s = checkTime(s);
-    var YY = today.getFullYear();
-    var mm = today.getMonth() + 1;
-    var dd = today.getDate();
-    var MM = checkTime(mm);
-    var DD = checkTime(dd);
-    $("#time").html(h + ":" + m)
-    $("#date_nl_box").html(weekDaysNL[today.getDay()] + " " + dd + " " + monthsNL[today.getMonth()] + " " + YY)
+    var t = getFormattedTimes(new Date())
+    $("#time").html(t.h + ":" + t.m)
+    $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 
     //countdown
     prayerNames = jsonObj.prayer_names;
-    prayerTimes = jsonObj.times[mm][dd];
+    prayerTimes = jsonObj.times[t.mm][t.dd];
     times = [];
     names = [];
     for (var i = 1; i < 7; i++) {
@@ -59,7 +73,7 @@ function renderCurrentTime() {
         names.push(prayerNames["p" + i]);
     }
     var idx = -1;
-    current = h + ":" + m;
+    current = t.h + ":" + t.m;
     //current = "21:10";
     for (var i = 0; i < 5; i++) {
         if (current < times[i]) {
@@ -86,7 +100,7 @@ function renderCurrentTime() {
         timeFromPrev = Math.abs(timeFromPrev);
     } else if (nextIdx == 5) {
         //tomorrow Fadjr
-        tomorrow = addDays(today, 1)
+        tomorrow = addDays(t.date, 1)
         tmm = tomorrow.getMonth() + 1;
         tdd = tomorrow.getDate();
         prayerTime = jsonObj.times[tmm][tdd].p1.t;

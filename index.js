@@ -12,8 +12,9 @@ var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", 
 var jsonObj = null;
 
 function startTime() {
-    renderPrayerTimes();
-    renderCurrentTime();
+    var now = new Date();
+    renderPrayerTimes(now);
+    renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
 }
 
@@ -57,8 +58,8 @@ function getFormattedTimes(today) {
     return t;
 }
 
-function renderCurrentTime() {
-    var t = getFormattedTimes(new Date())
+function renderCurrentTime(date) {
+    var t = getFormattedTimes(date)
     $("#time").html(t.h + ":" + t.m)
     $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 
@@ -137,10 +138,10 @@ function timeDiffInMinute(from, to) {
     return diffMins;
 }
 
-function renderPrayerTimes() {
+function renderPrayerTimes(date) {
     if (jsonObj == null)
         return;
-    var today = new Date();
+    var today = date;
     var mm = today.getMonth() + 1;
     var dd = today.getDate();
     prayerNames = jsonObj.prayer_names;

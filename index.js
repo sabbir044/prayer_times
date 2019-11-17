@@ -6,13 +6,14 @@ ipcRenderer.on('prayer-times', (event, arg) => {
   jsonObj = arg;
 });
 */
-var weekDaysNL = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
+var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 
 var jsonObj = null;
 
 function startTime() {
     var now = new Date();
+    //var now = new Date("2019-10-26T13:35:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -147,12 +148,13 @@ function renderPrayerTimes(date) {
     prayerNames = jsonObj.prayer_names;
     prayerTimes = jsonObj.times[mm][dd];
     //Fadjr
-    $("#fadjr").html(prayerNames.p1.AR + "<br/>" + prayerNames.p1.EN + "<br/>" + prayerTimes.p1.t)
+    $("#fadjr_time").html(prayerTimes.p1.t)
+        //$("#fadjr").html(prayerNames.p1.AR + "<br/>" + prayerNames.p1.EN + "<br/>" + prayerTimes.p1.t)
         //Dohr
-    $("#dohr").html(prayerNames.p3.AR + "<br/>" + prayerNames.p3.EN + "<br/>" + prayerTimes.p3.t)
-    $("#asr").html(prayerNames.p4.AR + "<br/>" + prayerNames.p4.EN + "<br/>" + prayerTimes.p4.t)
-    $("#magrib").html(prayerNames.p5.AR + "<br/>" + prayerNames.p5.EN + "<br/>" + prayerTimes.p5.t)
-    $("#isha").html(prayerNames.p6.AR + "<br/>" + prayerNames.p6.EN + "<br/>" + prayerTimes.p6.t)
+    $("#dohr_time").html(prayerTimes.p3.t)
+    $("#asr_time").html(prayerTimes.p4.t)
+    $("#maghreb_time").html(prayerTimes.p5.t)
+    $("#isha_time").html(prayerTimes.p6.t)
 }
 
 function checkTime(i) {

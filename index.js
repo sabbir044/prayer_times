@@ -13,7 +13,7 @@ var jsonObj = null;
 
 function startTime() {
     var now = new Date();
-    //var now = new Date("2019-10-26T13:35:00");
+    //now = new Date("2019-11-17T12:45:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -59,14 +59,11 @@ function getFormattedTimes(today) {
     return t;
 }
 
-function renderCurrentTime(date) {
-    var t = getFormattedTimes(date)
-    $("#time").html(t.h + ":" + t.m)
-    $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 
-    //countdown
+function getPrayerNamesAndTime(jsonObj, t) {
     prayerNames = jsonObj.prayer_names;
     prayerTimes = jsonObj.times[t.mm][t.dd];
+    tx = {}
     times = [];
     names = [];
     for (var i = 1; i < 7; i++) {
@@ -74,6 +71,49 @@ function renderCurrentTime(date) {
         times.push(prayerTimes["p" + i].t);
         names.push(prayerNames["p" + i]);
     }
+    tx.times = times
+    tx.names = names
+    return tx
+}
+
+function renderTimeAndDate(t) {
+    $("#time").html(t.h + ":" + t.m)
+    $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
+}
+
+function renderSlalatTimeDisplay(timeFromPrev, namePrev,) {
+    salatTime = Math.abs(timeFromPrev);
+    $("#time_rem").html(namePrev.EN + "<br/>-0:00");
+    if (salatTime < 10) {
+        $("#time_rem").css("background-color", "#bbd8fe");
+    } else {
+        $("#cover").css("display", "block");
+        $("#cover_time").html(current + "");
+    }
+}
+
+function renderTomorrowFadjrTime(jsonObj, t, current) {
+    //tomorrow Fadjr
+    tomorrow = addDays(t.date, 1)
+    tmm = tomorrow.getMonth() + 1;
+    tdd = tomorrow.getDate();
+    prayerTime = jsonObj.times[tmm][tdd].p1.t;
+    timeToNext = timeDiffInMinute(current, prayerTime)
+    if (timeToNext < 0) {
+        timeToNext = 24 * 60 + timeToNext;
+    }
+    hourToNext = Math.floor(timeToNext / 60);
+    minuteToNext = timeToNext % 60;
+    nameNext = prayerTimes.names[0];
+    $("#time_rem").html(nameNext.EN + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
+}
+
+function renderCurrentTime(date) {
+    var t = getFormattedTimes(date)
+    renderTimeAndDate(t) 
+
+    //countdown
+    prayerTimes = getPrayerNamesAndTime(jsonObj, t)
     var idx = -1;
     current = t.h + ":" + t.m;
     //current = "21:10";
@@ -85,38 +125,18 @@ function renderCurrentTime(date) {
     }
     prevIdx = idx;
     nextIdx = idx + 1;
-    timePrev = times[prevIdx];
-    namePrev = names[prevIdx];
+    timePrev = prayerTimes.times[prevIdx];
+    namePrev = prayerTimes.names[prevIdx];
     $("#cover").css("display", "none");
     $("#time_rem").css("background-color", "#fffec2");
     timeFromPrev = timeDiffInMinute(timePrev, current);
     if (Math.abs(timeFromPrev) < 30) {
-        salatTime = Math.abs(timeFromPrev);
-        $("#time_rem").html(namePrev.EN + "<br/>-0:00");
-        if (salatTime < 10) {
-            $("#time_rem").css("background-color", "#bbd8fe");
-        } else {
-            $("#cover").css("display", "block");
-            $("#cover_time").html(current + "");
-        }
-        timeFromPrev = Math.abs(timeFromPrev);
+        renderSlalatTimeDisplay(timeFromPrev, namePrev)        
     } else if (nextIdx == 5) {
-        //tomorrow Fadjr
-        tomorrow = addDays(t.date, 1)
-        tmm = tomorrow.getMonth() + 1;
-        tdd = tomorrow.getDate();
-        prayerTime = jsonObj.times[tmm][tdd].p1.t;
-        timeToNext = timeDiffInMinute(current, prayerTime)
-        if (timeToNext < 0) {
-            timeToNext = 24 * 60 + timeToNext;
-        }
-        hourToNext = Math.floor(timeToNext / 60);
-        minuteToNext = timeToNext % 60;
-        nameNext = names[0];
-        $("#time_rem").html(nameNext.EN + "<br/>-" + hourToNext + ":" + minuteToNext);
+        renderTomorrowFadjrTime(jsonObj, t, current) 
     } else {
-        timeNext = times[nextIdx];
-        nameNext = names[nextIdx];
+        timeNext = prayerTimes.times[nextIdx];
+        nameNext = prayerTimes.names[nextIdx];
         timeToNext = timeDiffInMinute(current, timeNext)
         hourToNext = Math.floor(timeToNext / 60);
         minuteToNext = timeToNext % 60;
@@ -145,12 +165,10 @@ function renderPrayerTimes(date) {
     var today = date;
     var mm = today.getMonth() + 1;
     var dd = today.getDate();
-    prayerNames = jsonObj.prayer_names;
     prayerTimes = jsonObj.times[mm][dd];
     //Fadjr
     $("#fadjr_time").html(prayerTimes.p1.t)
-        //$("#fadjr").html(prayerNames.p1.AR + "<br/>" + prayerNames.p1.EN + "<br/>" + prayerTimes.p1.t)
-        //Dohr
+        
     $("#dohr_time").html(prayerTimes.p3.t)
     $("#asr_time").html(prayerTimes.p4.t)
     $("#maghreb_time").html(prayerTimes.p5.t)

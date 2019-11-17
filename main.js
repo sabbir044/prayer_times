@@ -30,14 +30,14 @@ const createWindow = () => {
         webPreferences: {
             nodeIntegration: true
         },
-        kiosk: false
+        kiosk: true
     });
 
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/index.html`);
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {

@@ -13,7 +13,7 @@ var jsonObj = null;
 
 function startTime() {
     var now = new Date();
-    //now = new Date("2019-11-17T12:45:00");
+    //now = new Date("2019-11-22T11:45:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -61,15 +61,21 @@ function getFormattedTimes(today) {
 
 
 function getPrayerNamesAndTime(jsonObj, t) {
-    prayerNames = jsonObj.prayer_names;
-    prayerTimes = jsonObj.times[t.mm][t.dd];
-    tx = {}
-    times = [];
-    names = [];
+    var prayerNames = ["Fadjr","","Dohr","Asr","Maghrib","Isha","Jumu'ah"];
+    var prayerTimes = jsonObj.times[t.mm][t.dd];
+    var tx = {}
+    var times = [];
+    var names = [];
+    var weekDayOfToday = weekDaysNL[t.date.getDay()]
     for (var i = 1; i < 7; i++) {
         if (i == 2) continue;
         times.push(prayerTimes["p" + i].t);
-        names.push(prayerNames["p" + i]);
+        if (i==3 && weekDayOfToday == "Vrijdag") {
+            names.push(prayerNames[6]);
+        }
+        else {
+            names.push(prayerNames[i-1]);
+        }
     }
     tx.times = times
     tx.names = names
@@ -92,7 +98,7 @@ function renderSlalatTimeDisplay(timeFromPrev, namePrev,) {
     }
 }
 
-function renderTomorrowFadjrTime(jsonObj, t, current) {
+function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes) {
     //tomorrow Fadjr
     tomorrow = addDays(t.date, 1)
     tmm = tomorrow.getMonth() + 1;
@@ -105,7 +111,7 @@ function renderTomorrowFadjrTime(jsonObj, t, current) {
     hourToNext = Math.floor(timeToNext / 60);
     minuteToNext = timeToNext % 60;
     nameNext = prayerTimes.names[0];
-    $("#time_rem").html(nameNext.EN + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
+    $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
 }
 
 function renderCurrentTime(date) {
@@ -113,12 +119,12 @@ function renderCurrentTime(date) {
     renderTimeAndDate(t) 
 
     //countdown
-    prayerTimes = getPrayerNamesAndTime(jsonObj, t)
+    var prayerTimes = getPrayerNamesAndTime(jsonObj, t)
     var idx = -1;
     current = t.h + ":" + t.m;
     //current = "21:10";
     for (var i = 0; i < 5; i++) {
-        if (current < times[i]) {
+        if (current < prayerTimes.times[i]) {
             break;
         }
         idx = i;
@@ -133,14 +139,14 @@ function renderCurrentTime(date) {
     if (Math.abs(timeFromPrev) < 30) {
         renderSlalatTimeDisplay(timeFromPrev, namePrev)        
     } else if (nextIdx == 5) {
-        renderTomorrowFadjrTime(jsonObj, t, current) 
+        renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes) 
     } else {
         timeNext = prayerTimes.times[nextIdx];
         nameNext = prayerTimes.names[nextIdx];
         timeToNext = timeDiffInMinute(current, timeNext)
         hourToNext = Math.floor(timeToNext / 60);
         minuteToNext = timeToNext % 60;
-        $("#time_rem").html(nameNext.EN + "<br/>-" + hourToNext + ":" + minuteToNext)
+        $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
 
     }
 }
@@ -168,7 +174,14 @@ function renderPrayerTimes(date) {
     prayerTimes = jsonObj.times[mm][dd];
     //Fadjr
     $("#fadjr_time").html(prayerTimes.p1.t)
-        
+    weekDayOfToday = weekDaysNL[today.getDay()]
+    if (weekDayOfToday == "Vrijdag") {
+        $("#dohr_en").html("Jumu'ah")
+        $("#dohr_ar").html("الجمع")
+    } else {
+        $("#dohr_en").html("Dohr")
+        $("#dohr_ar").html("الظُهر")
+    }
     $("#dohr_time").html(prayerTimes.p3.t)
     $("#asr_time").html(prayerTimes.p4.t)
     $("#maghreb_time").html(prayerTimes.p5.t)

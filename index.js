@@ -6,14 +6,70 @@ ipcRenderer.on('prayer-times', (event, arg) => {
   jsonObj = arg;
 });
 */
+const { spawnSync} = require('child_process');
+
 var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
+const decoder = new TextDecoder("utf-8")
 
 var jsonObj = null;
+var lastMonitorOffTime = new Date();
+var lastMonitorOnTime = new Date();
+
+function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
+    if (isPrevJuma && timeFromPrev > 10) {
+        switchDisplayOff();
+    }
+    else if (timeFromPrev > 40 && timeToNext > 15) {
+        switchDisplayOff();
+    } else {
+        switchDisplayOn();
+    }
+}
+
+function switchDisplayOff() {
+    var currentTime = new Date();
+    var diffMS = currentTime - lastMonitorOnTime;
+    var diffMins = diffMS/60000;
+
+    if (diffMins < 5) {
+        return;
+    }
+    //xset dpms force off
+    setTimeout(function() {
+        console.log("switching diplay on");
+        const child = spawnSync('xset', ['dpms', 'force','on']);
+        console.log('error', decoder.decode(child.error));
+        console.log('stdout ', decoder.decode(child.stdout));
+        console.log('stderr ', decoder.decode(child.stderr));
+    }, 0);
+
+    lastMonitorOnTime = new Date();
+}
+
+function switchDisplayOff() {
+    var currentTime = new Date();
+    var diffMS = currentTime - lastMonitorOffTime;
+    var diffMins = diffMS/60000;
+
+    if (diffMins < 5) {
+        return;
+    }
+    //xset dpms force off
+    setTimeout(function() {
+        console.log("switching diplay off");
+        const child = spawnSync('xset', ['dpms', 'force','off']);
+        console.log('error', decoder.decode(child.error));
+        console.log('stdout ', decoder.decode(child.stdout));
+        console.log('stderr ', decoder.decode(child.stderr));
+    }, 1000);
+
+    lastMonitorOffTime = new Date();
+}
 
 function startTime() {
     var now = new Date();
-    //now = new Date("2019-11-22T11:45:00");
+    //now = new Date("2019-11-24T18:45:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -87,18 +143,21 @@ function renderTimeAndDate(t) {
     $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 }
 
-function renderSlalatTimeDisplay(timeFromPrev, namePrev,) {
+function renderSlalatTimeDisplay(timeFromPrev, namePrev) {
     salatTime = Math.abs(timeFromPrev);
-    $("#time_rem").html(namePrev.EN + "<br/>-0:00");
+    $("#time_rem").html(namePrev + "<br/>-00:00");
+    timeToPray = 10 - salatTime;
     if (salatTime < 10) {
         $("#time_rem").css("background-color", "#bbd8fe");
+        $("#prayertime_remtime_countdown").html(timeToPray+" "+(timeToPray>1?"Minutes":"Minute"))
+        $("#prayertime_rem").css("visibility", "visible")
     } else {
         $("#cover").css("display", "block");
         $("#cover_time").html(current + "");
     }
 }
 
-function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes) {
+function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev) {
     //tomorrow Fadjr
     tomorrow = addDays(t.date, 1)
     tmm = tomorrow.getMonth() + 1;
@@ -112,14 +171,15 @@ function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes) {
     minuteToNext = timeToNext % 60;
     nameNext = prayerTimes.names[0];
     $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
+    saveEnergy(timeFromPrev, timeToNext, 0);
 }
 
 function renderCurrentTime(date) {
-    var t = getFormattedTimes(date)
-    renderTimeAndDate(t) 
+    var t = getFormattedTimes(date);
+    renderTimeAndDate(t);
 
     //countdown
-    var prayerTimes = getPrayerNamesAndTime(jsonObj, t)
+    var prayerTimes = getPrayerNamesAndTime(jsonObj, t);
     var idx = -1;
     current = t.h + ":" + t.m;
     //current = "21:10";
@@ -136,18 +196,19 @@ function renderCurrentTime(date) {
     $("#cover").css("display", "none");
     $("#time_rem").css("background-color", "#fffec2");
     timeFromPrev = timeDiffInMinute(timePrev, current);
+    $("#prayertime_rem").css("visibility", "hidden");
     if (Math.abs(timeFromPrev) < 30) {
-        renderSlalatTimeDisplay(timeFromPrev, namePrev)        
+        renderSlalatTimeDisplay(timeFromPrev, namePrev);
     } else if (nextIdx == 5) {
-        renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes) 
+        renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
     } else {
         timeNext = prayerTimes.times[nextIdx];
         nameNext = prayerTimes.names[nextIdx];
         timeToNext = timeDiffInMinute(current, timeNext)
         hourToNext = Math.floor(timeToNext / 60);
         minuteToNext = timeToNext % 60;
-        $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
-
+        $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
+        saveEnergy(timeFromPrev, timeToNext, namePrev == prayerTimes.name[6]);
     }
 }
 

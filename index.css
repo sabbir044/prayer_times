@@ -21,7 +21,7 @@ body {
 
 #mid {
     /*background-color: blue;*/
-    height: 55%;
+    height: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -29,8 +29,8 @@ body {
 }
 
 #bot {
-    background-color: #e3e3e3;
-    height: 25%;
+    /*background-color: red;*/
+    height: 30%;
 }
 
 #date_nl_box {
@@ -67,8 +67,19 @@ body {
     width: 20vw;
 }
 
+#prayertime_rem {
+    height: 34%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 6vh;
+    background-color: green;
+    color:white;
+}
+
 #prayer_times {
-    height: 20vh;
+    background-color: #e3e3e3;
+    height: 66%;
     /*background-color:orange;*/
     display: flex;
     align-items: center;

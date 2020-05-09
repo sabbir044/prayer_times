@@ -208,7 +208,7 @@ function renderCurrentTime(date) {
         hourToNext = Math.floor(timeToNext / 60);
         minuteToNext = timeToNext % 60;
         $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
-        saveEnergy(timeFromPrev, timeToNext, namePrev == prayerTimes.name[6]);
+        saveEnergy(timeFromPrev, timeToNext, namePrev == prayerTimes.names[6]);
     }
 }
 

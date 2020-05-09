@@ -27,7 +27,7 @@ function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
     }
 }
 
-function switchDisplayOff() {
+function switchDisplayOn() {
     var currentTime = new Date();
     var diffMS = currentTime - lastMonitorOnTime;
     var diffMins = diffMS/60000;
@@ -117,7 +117,7 @@ function getFormattedTimes(today) {
 
 
 function getPrayerNamesAndTime(jsonObj, t) {
-    var prayerNames = ["Fadjr","","Dohr","Asr","Maghrib","Isha","Jumu'ah"];
+    var prayerNames = ["Fadjr","","Dohr","Asr","Maghreb","Isha","Jumu'ah"];
     var prayerTimes = jsonObj.times[t.mm][t.dd];
     var tx = {}
     var times = [];

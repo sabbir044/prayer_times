@@ -10,7 +10,8 @@ const { spawnSync} = require('child_process');
 
 var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
-const decoder = new TextDecoder("utf-8")
+const decoder = new TextDecoder("utf-8");
+const WAITING_TIME = 7;
 
 var jsonObj = null;
 var lastMonitorOffTime = new Date();
@@ -35,7 +36,7 @@ function switchDisplayOn() {
     if (diffMins < 5) {
         return;
     }
-    //xset dpms force off
+    //xset dpms force on
     setTimeout(function() {
         console.log("switching diplay on");
         const child = spawnSync('xset', ['dpms', 'force','on']);
@@ -69,7 +70,7 @@ function switchDisplayOff() {
 
 function startTime() {
     var now = new Date();
-    //now = new Date("2019-11-24T18:45:00");
+    //now = new Date("2020-05-31T22:04:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -146,8 +147,8 @@ function renderTimeAndDate(t) {
 function renderSlalatTimeDisplay(timeFromPrev, namePrev) {
     salatTime = Math.abs(timeFromPrev);
     $("#time_rem").html(namePrev + "<br/>-00:00");
-    timeToPray = 10 - salatTime;
-    if (salatTime < 10) {
+    timeToPray = WAITING_TIME - salatTime;
+    if (salatTime < WAITING_TIME) {
         $("#time_rem").css("background-color", "#bbd8fe");
         $("#prayertime_remtime_countdown").html(timeToPray+" "+(timeToPray>1?"Minutes":"Minute"))
         $("#prayertime_rem").css("visibility", "visible")
@@ -171,7 +172,6 @@ function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev)
     minuteToNext = timeToNext % 60;
     nameNext = prayerTimes.names[0];
     $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
-    saveEnergy(timeFromPrev, timeToNext, 0);
 }
 
 function renderCurrentTime(date) {
@@ -208,8 +208,8 @@ function renderCurrentTime(date) {
         hourToNext = Math.floor(timeToNext / 60);
         minuteToNext = timeToNext % 60;
         $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
-        saveEnergy(timeFromPrev, timeToNext, namePrev == prayerTimes.names[6]);
     }
+    saveEnergy(timeFromPrev, timeToNext, namePrev == prayerTimes.names[6]);
 }
 
 function addDays(date, days) {

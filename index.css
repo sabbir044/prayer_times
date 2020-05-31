@@ -59,12 +59,12 @@ body {
 
 #time_rem {
     position: absolute;
-    right: 10vw;
+    right: 7vw;
     font-size: 10vh;
     background-color: #fffec2;
     border-radius: 25px;
     text-align: center;
-    width: 20vw;
+    width: 25vw;
 }
 
 #prayertime_rem {

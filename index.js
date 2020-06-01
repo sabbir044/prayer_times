@@ -35,7 +35,7 @@ function switchDisplayOn() {
     var diffMS = currentTime - lastMonitorOnTime;
     var diffMins = diffMS/60000;
 
-    if (diffMins < 1) {
+    if (diffMins < 5) {
         return;
     }
     //xset dpms force on
@@ -55,7 +55,7 @@ function switchDisplayOff() {
     var diffMS = currentTime - lastMonitorOffTime;
     var diffMins = diffMS/60000;
 
-    if (diffMins < 1) {
+    if (diffMins < 5) {
         return;
     }
     //xset dpms force off

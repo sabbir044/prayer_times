@@ -35,12 +35,12 @@ function switchDisplayOn() {
     var diffMS = currentTime - lastMonitorOnTime;
     var diffMins = diffMS/60000;
 
-    if (diffMins < 5) {
+    if (diffMins < 1) {
         return;
     }
     //xset dpms force on
     setTimeout(function() {
-        console.log("switching diplay on");
+        console.log("switching diplay on: "+currentTime);
         const child = spawnSync('xset', ['dpms', 'force','on']);
         console.log('error', decoder.decode(child.error));
         console.log('stdout ', decoder.decode(child.stdout));
@@ -60,7 +60,7 @@ function switchDisplayOff() {
     }
     //xset dpms force off
     setTimeout(function() {
-        console.log("switching diplay off");
+        console.log("switching diplay off: "+currentTime);
         const child = spawnSync('xset', ['dpms', 'force','off']);
         console.log('error', decoder.decode(child.error));
         console.log('stdout ', decoder.decode(child.stdout));
@@ -158,6 +158,7 @@ function renderSlalatTimeDisplay(timeFromPrev, namePrev, current) {
         $("#cover").css("display", "block");
         $("#cover_time").html(current + "");
     }
+    saveEnergy(timeFromPrev, 100, 0);
 }
 
 function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev) {

@@ -45,6 +45,21 @@ function switchDisplayOn() {
         console.log('error', decoder.decode(child.error));
         console.log('stdout ', decoder.decode(child.stdout));
         console.log('stderr ', decoder.decode(child.stderr));
+
+        const child2 = spawnSync('xset', ['s', 'noblank']);
+        console.log('error', decoder.decode(child2.error));
+        console.log('stdout ', decoder.decode(child2.stdout));
+        console.log('stderr ', decoder.decode(child2.stderr));
+
+        const child3 = spawnSync('xset', ['s', 'off']);
+        console.log('error', decoder.decode(child3.error));
+        console.log('stdout ', decoder.decode(child3.stdout));
+        console.log('stderr ', decoder.decode(child3.stderr));
+
+        const child4 = spawnSync('xset', ['dpms']);
+        console.log('error', decoder.decode(child4.error));
+        console.log('stdout ', decoder.decode(child4.stdout));
+        console.log('stderr ', decoder.decode(child4.stderr));
     }, 0);
 
     lastMonitorOnTime = new Date();

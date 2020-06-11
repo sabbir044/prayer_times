@@ -87,7 +87,7 @@ function switchDisplayOff() {
 
 function startTime() {
     var now = new Date();
-    //now = new Date("2020-05-31T22:04:00");
+    //now = new Date("2020-06-10T22:08:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -167,7 +167,7 @@ function renderSlalatTimeDisplay(timeFromPrev, namePrev, current) {
     var timeToPray = WAITING_TIME - salatTime;
     if (salatTime < WAITING_TIME) {
         $("#time_rem").css("background-color", "#bbd8fe");
-        $("#prayertime_remtime_countdown").html(timeToPray+" "+(timeToPray>1?"Minutes":"Minute"))
+        $("#prayertime_remtime_countdown").html(timeToPray+" "+(timeToPray>1?"minuten":"minuut"))
         $("#prayertime_rem").css("visibility", "visible")
     } else {
         $("#cover").css("display", "block");

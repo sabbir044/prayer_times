@@ -11,7 +11,14 @@ const { spawnSync} = require('child_process');
 var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 const decoder = new TextDecoder("utf-8");
+
+//constants
 const WAITING_TIME = 7;
+const AFTER_PRAYER_DISPLAY_ON_TIME = 8;
+const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
+const JUMA_PRAYER_DISPLAY_ON_TIME = 10;
+const PRAYER_TIME = 15;
+
 
 var jsonObj = null;
 var lastMonitorOffTime = new Date();
@@ -20,10 +27,10 @@ var lastMonitorOnTime = new Date();
 function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
     minuteFromPrev = Math.abs(minuteFromPrev)
     minuteToNext = Math.abs(minuteToNext)
-    if (isPrevJuma && minuteFromPrev > 10 && minuteToNext > 15) {
+    prayerONTime = WAITING_TIME + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
+    if (isPrevJuma && minuteFromPrev > JUMA_PRAYER_DIPLAY_ON_TIME && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
         switchDisplayOff();
-    }
-    else if (minuteFromPrev > 40 && minuteToNext > 15) {
+    } else if (minuteFromPrev > prayerONTime && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
         switchDisplayOff();
     } else {
         switchDisplayOn();
@@ -87,7 +94,7 @@ function switchDisplayOff() {
 
 function startTime() {
     var now = new Date();
-    //now = new Date("2020-06-10T22:08:00");
+    //now = new Date("2020-07-25T22:20:00");
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -201,6 +208,7 @@ function renderCurrentTime(date) {
     var prayerTimes = getPrayerNamesAndTime(jsonObj, t);
     var idx = -1;
     var current = t.h + ":" + t.m;
+    const currentTime = t
     //current = "21:10";
     for (var i = 0; i < 5; i++) {
         if (current < prayerTimes.times[i]) {
@@ -216,7 +224,7 @@ function renderCurrentTime(date) {
     $("#time_rem").css("background-color", "#fffec2");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
     $("#prayertime_rem").css("visibility", "hidden");
-    if (Math.abs(timeFromPrev) < 30) {
+    if (Math.abs(timeFromPrev) < (PRAYER_TIME + WAITING_TIME)) {
         renderSlalatTimeDisplay(timeFromPrev, namePrev, current);
     } else if (nextIdx == 5) {
         renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);

@@ -15,13 +15,13 @@ body {
 
 #top {
     /*background-color: orange;*/
-    height: 20%;
+    height: 25%;
     font-size: 6vh;
 }
 
 #mid {
     /*background-color: blue;*/
-    height: 50%;
+    height: 40%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -30,12 +30,12 @@ body {
 
 #bot {
     /*background-color: red;*/
-    height: 30%;
+    height: 35%;
 }
 
 #date_nl_box {
     float: inherit;
-    margin-left: 5%;
+    /*margin-left: 5%;*/
     height: 100%;
     /*background-color: red;*/
     display: flex;

@@ -28,7 +28,7 @@ function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
     minuteFromPrev = Math.abs(minuteFromPrev)
     minuteToNext = Math.abs(minuteToNext)
     prayerONTime = WAITING_TIME + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
-    if (isPrevJuma && minuteFromPrev > JUMA_PRAYER_DIPLAY_ON_TIME && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
+    if (isPrevJuma && minuteFromPrev > JUMA_PRAYER_DISPLAY_ON_TIME && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
         switchDisplayOff();
     } else if (minuteFromPrev > prayerONTime && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
         switchDisplayOff();

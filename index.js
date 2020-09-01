@@ -19,6 +19,8 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = 10;
 const PRAYER_TIME = 15;
 
+var testDate = new Date("2020-07-25T21:48:30");
+
 
 var jsonObj = null;
 var lastMonitorOffTime = new Date();
@@ -94,7 +96,7 @@ function switchDisplayOff() {
 
 function startTime() {
     var now = new Date();
-    //now = new Date("2020-07-25T22:20:00");
+    //now = testDate;
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -168,13 +170,13 @@ function renderTimeAndDate(t) {
     $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 }
 
-function renderSlalatTimeDisplay(timeFromPrev, namePrev, current) {
+function renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec) {
     var salatTime = Math.abs(timeFromPrev);
     $("#time_rem").html(namePrev + "<br/>-00:00");
     var timeToPray = WAITING_TIME - salatTime;
     if (salatTime < WAITING_TIME) {
         $("#time_rem").css("background-color", "#bbd8fe");
-        $("#prayertime_remtime_countdown").html(timeToPray+" "+(timeToPray>1?"minuten":"minuut"))
+        $("#prayertime_remtime_countdown").html("-"+timeFromPrevWithSec)
         $("#prayertime_rem").css("visibility", "visible")
     } else {
         $("#cover").css("display", "block");
@@ -223,9 +225,10 @@ function renderCurrentTime(date) {
     $("#cover").css("display", "none");
     $("#time_rem").css("background-color", "#fffec2");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
+    var timeFromPrevWithSec = timeDiffWithSecond(timePrev,date)
     $("#prayertime_rem").css("visibility", "hidden");
     if (Math.abs(timeFromPrev) < (PRAYER_TIME + WAITING_TIME)) {
-        renderSlalatTimeDisplay(timeFromPrev, namePrev, current);
+        renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec);
     } else if (nextIdx == 5) {
         renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
     } else {
@@ -252,6 +255,31 @@ function timeDiffInMinute(from, to) {
     var diffMins = Math.round(diffMs / 60000); // minutes
     return diffMins;
 }
+
+function timeDiffWithSecond(prayerTime, t1) {
+    hhmm = prayerTime.split(":")
+    var t2 = new Date().setHours(parseInt(hhmm[0]), parseInt(hhmm[1])+WAITING_TIME, 0)
+    delta = Math.floor(Math.abs(t2-t1)/1000)
+    // calculate (and subtract) whole days
+    var days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+
+    // calculate (and subtract) whole hours
+    var hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+
+    // calculate (and subtract) whole minutes
+    var minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+
+    // what's left is seconds
+    var seconds = delta % 60;
+
+    minutes = checkTime(minutes)
+    seconds = checkTime(seconds)
+    return `${minutes}:${seconds}`
+}
+
 
 function renderPrayerTimes(date) {
     if (jsonObj == null)

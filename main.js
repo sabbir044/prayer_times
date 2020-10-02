@@ -30,7 +30,7 @@ const createWindow = () => {
         webPreferences: {
             nodeIntegration: true
         },
-        kiosk: true
+        kiosk: false
     });
 
     // and load the index.html of the app.

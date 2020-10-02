@@ -59,7 +59,7 @@ body {
 
 #time_rem {
     position: absolute;
-    right: 7vw;
+    right: 5vw;
     font-size: 10vh;
     background-color: #fffec2;
     border-radius: 25px;
@@ -84,6 +84,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    align-items: stretch;
 }
 
 .prayer_time {
@@ -98,23 +99,28 @@ body {
 }
 
 #fadjr {
-    color: darkviolet;
+    background-color:#4a6c94;
+    color: white;
 }
 
 #dohr {
-    color: orange;
+    background-color: gray;
+    color: white;
 }
 
 #asr {
-    color: darkgreen;
+    color: white;
+    background-color: slategray;
 }
 
 #magrib {
-    color: blue;
+    color: white;
+    background-color: #2F4F4F;
 }
 
 #isha {
-    color: #c6594b;
+    color: white;
+    background-color: black;
 }
 
 #banner {

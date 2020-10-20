@@ -16,10 +16,10 @@ const decoder = new TextDecoder("utf-8");
 const WAITING_TIME = 7;
 const AFTER_PRAYER_DISPLAY_ON_TIME = 20; //make it 20 minutes
 const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
-const JUMA_PRAYER_DISPLAY_ON_TIME = 10;
+const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2020-07-25T21:48:30");
+var testDate = new Date("2020-10-20T15:48:30");
 
 
 var jsonObj = null;
@@ -95,8 +95,8 @@ function switchDisplayOff() {
 }
 
 function startTime() {
-    //var now = new Date();
-    now = testDate;
+    var now = new Date();
+    //now = testDate;
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -145,23 +145,28 @@ function getFormattedTimes(today) {
 
 function getPrayerNamesAndTime(jsonObj, t) {
     var prayerNames = ["Fadjr", "", "Dohr", "Asr", "Maghreb", "Isha", "Jumu'ah"];
+    var prayerNamesAr = ["الفجر", "", "الظُهر", "العصر", "المغرب", "العِشاء", "الجمع"];
     var prayerTimes = jsonObj.times[t.mm][t.dd];
     var tx = {}
     var times = [];
     var names = [];
+    var namesAr = [];
     var weekDayOfToday = weekDaysNL[t.date.getDay()]
     for (var i = 1; i < 7; i++) {
         if (i == 2) continue;
         times.push(prayerTimes["p" + i].t);
         if (i == 3 && weekDayOfToday == "Vrijdag") {
             names.push(prayerNames[6]);
+            namesAr.push(prayerNamesAr[6]);
         }
         else {
             names.push(prayerNames[i - 1]);
+            namesAr.push(prayerNamesAr[i - 1]);
         }
     }
     tx.times = times
     tx.names = names
+    tx.namesAr = namesAr
     return tx
 }
 
@@ -170,19 +175,23 @@ function renderTimeAndDate(t) {
     $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 }
 
-function renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec) {
+function renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec, isPrevJuma) {
     var salatTime = Math.abs(timeFromPrev);
-    $("#time_rem").html(namePrev + "<br/>-00:00");
+    $("#time_rem").css("background-color", "green");
+    //$("#time_rem").html(namePrev + "<br/>-00:00");
     var timeToPray = WAITING_TIME - salatTime;
     if (salatTime < WAITING_TIME) {
-        $("#time_rem").css("background-color", "#bbd8fe");
-        $("#prayertime_remtime_countdown").html("-" + timeFromPrevWithSec)
-        $("#prayertime_rem").css("visibility", "visible")
+        $("#time_rem_prayer_name").html("Iqama")
+        $("#time_rem_time").html("-" + timeFromPrevWithSec)
+        $("#time_rem_prayer_name_ar").html("إقامة")
+        //$("#time_rem").css("background-color", "#bbd8fe");
+        //$("#prayertime_remtime_countdown").html("-" + timeFromPrevWithSec)
+        //$("#prayertime_rem").css("visibility", "visible")
     } else {
         $("#cover").css("display", "block");
         $("#cover_time").html(current + "");
     }
-    saveEnergy(timeFromPrev, 100, 0);
+    saveEnergy(timeFromPrev, 100, isPrevJuma);
 }
 
 function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev) {
@@ -198,7 +207,11 @@ function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev)
     var hourToNext = Math.floor(timeToNext / 60);
     var minuteToNext = timeToNext % 60;
     var nameNext = prayerTimes.names[0];
-    $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
+    var nameNextAr = prayerTimes.namesAr[0];
+    $("#time_rem").css("background-color", "#fffec2");
+    $("#time_rem_prayer_name").html(nameNext)
+    $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
+    $("#time_rem_prayer_name_ar").html(nameNextAr)
     saveEnergy(timeFromPrev, timeToNext, 0);
 }
 
@@ -223,22 +236,24 @@ function renderCurrentTime(date) {
     var timePrev = prayerTimes.times[prevIdx];
     var namePrev = prayerTimes.names[prevIdx];
     $("#cover").css("display", "none");
-    $("#time_rem").css("background-color", "#fffec2");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
     var timeFromPrevWithSec = timeDiffWithSecond(timePrev, date)
-    $("#prayertime_rem").css("visibility", "hidden");
     if (Math.abs(timeFromPrev) < (PRAYER_TIME + WAITING_TIME)) {
-        renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec);
+        renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec, namePrev === "Jumu'ah");
     } else if (nextIdx == 5) {
         renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
     } else {
+        $("#time_rem").css("background-color", "#fffec2");
         var timeNext = prayerTimes.times[nextIdx];
         var nameNext = prayerTimes.names[nextIdx];
+        var nameNextAr = prayerTimes.namesAr[nextIdx];
         var timeToNext = timeDiffInMinute(current, timeNext)
         var hourToNext = Math.floor(timeToNext / 60);
         var minuteToNext = timeToNext % 60;
-        $("#time_rem").html(nameNext + "<br/>-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext));
-        saveEnergy(timeFromPrev, timeToNext, namePrev == prayerTimes.names[6]);
+        $("#time_rem_prayer_name").html(nameNext)
+        $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
+        $("#time_rem_prayer_name_ar").html(nameNextAr)
+        saveEnergy(timeFromPrev, timeToNext, namePrev === "Jumu'ah");
     }
 }
 
@@ -258,7 +273,12 @@ function timeDiffInMinute(from, to) {
 
 function timeDiffWithSecond(prayerTime, t1) {
     hhmm = prayerTime.split(":")
-    var t2 = new Date().setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0)
+
+    var t2 = new Date();
+    t2.setMonth(t1.getMonth());
+    t2.setDate(t1.getDate());
+    t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0);
+
     delta = Math.floor(Math.abs(t2 - t1) / 1000)
     // calculate (and subtract) whole days
     var days = Math.floor(delta / 86400);

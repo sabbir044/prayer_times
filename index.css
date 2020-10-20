@@ -15,22 +15,21 @@ body {
 
 #top {
     /*background-color: orange;*/
-    height: 25%;
+    height: 20%;
     font-size: 6vh;
 }
 
 #mid {
     /*background-color: blue;*/
-    height: 40%;
+    height: 58%;
     display: flex;
     justify-content: center;
-    align-items: center;
     position: relative;
 }
 
 #bot {
     /*background-color: red;*/
-    height: 35%;
+    height: 22%;
 }
 
 #date_nl_box {
@@ -58,28 +57,30 @@ body {
 }
 
 #time_rem {
+    display: flex;
     position: absolute;
-    right: 5vw;
-    font-size: 10vh;
+    font-size: 8vh;
     background-color: #fffec2;
     border-radius: 25px;
     text-align: center;
-    width: 25vw;
+    top: 30vh;
+    width: 65vw;
+   /* margin-left: 20vw;
+    margin-right: 20vw; */
+    padding-top:1vh;
 }
 
-#prayertime_rem {
-    height: 34%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 6vh;
-    background-color: green;
-    color:white;
+#time_rem_prayer_name {
+    flex: 1
+}
+
+#time_rem_prayer_name_ar {
+    flex: 1
 }
 
 #prayer_times {
     background-color: #e3e3e3;
-    height: 66%;
+    height: 100%;
     /*background-color:orange;*/
     display: flex;
     align-items: center;
@@ -101,26 +102,31 @@ body {
 #fadjr {
     background-color:#4a6c94;
     color: white;
+    padding-top: 1%;
 }
 
 #dohr {
     background-color: gray;
     color: white;
+    padding-top: 1%;
 }
 
 #asr {
     color: white;
     background-color: slategray;
+    padding-top: 1%;
 }
 
 #magrib {
     color: white;
     background-color: #2F4F4F;
+    padding-top: 1%;
 }
 
 #isha {
     color: white;
     background-color: black;
+    padding-top: 1%;
 }
 
 #banner {
@@ -134,7 +140,7 @@ body {
 
 #cover {
     position: fixed;
-    display: block;
+    display: none;
     width: 100vw;
     height: 100vh;
     top: 0;
@@ -164,4 +170,7 @@ body {
     color: white;
     transform: translate(-50%, 0%);
     text-align: center;
+}
+.tab {
+    padding-left: 1%;
 }

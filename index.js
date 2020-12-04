@@ -19,7 +19,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2020-10-20T15:48:30");
+var testDate = new Date("2020-10-23T13:15:30");
 
 
 var jsonObj = null;
@@ -208,7 +208,7 @@ function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev)
     var minuteToNext = timeToNext % 60;
     var nameNext = prayerTimes.names[0];
     var nameNextAr = prayerTimes.namesAr[0];
-    $("#time_rem").css("background-color", "#fffec2");
+    $("#time_rem").css("background-color", "#f2e8e2");
     $("#time_rem_prayer_name").html(nameNext)
     $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
     $("#time_rem_prayer_name_ar").html(nameNextAr)
@@ -243,7 +243,7 @@ function renderCurrentTime(date) {
     } else if (nextIdx == 5) {
         renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
     } else {
-        $("#time_rem").css("background-color", "#fffec2");
+        $("#time_rem").css("background-color", "#f2e8e2");
         var timeNext = prayerTimes.times[nextIdx];
         var nameNext = prayerTimes.names[nextIdx];
         var nameNextAr = prayerTimes.namesAr[nextIdx];

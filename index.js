@@ -1,11 +1,12 @@
-/*const { ipcRenderer } = require('electron')
+const { ipcRenderer } = require('electron')
 
 
 ipcRenderer.on('prayer-times', (event, arg) => {
-  console.log(arg);
-  jsonObj = arg;
+    console.log(arg);
+    jsonObj = arg;
+    startTime();
 });
-*/
+
 const { spawnSync } = require('child_process');
 
 var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];

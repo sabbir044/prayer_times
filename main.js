@@ -10,7 +10,13 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 //load json file
 var jsonObj
 try {
-    var jsonStr = fs.readFileSync(`${__dirname}/prayer_times.json`, 'utf8');
+    fileName = `${__dirname}/prayer_times.json`
+    if (app.commandLine.hasSwitch('file') === true) {
+        fileName = app.commandLine.getSwitchValue('file')
+        console.log("fileswitch value: " + fileName)
+    }
+    console.log("filename: " + fileName)
+    var jsonStr = fs.readFileSync(fileName, 'utf8')
     jsonObj = JSON.parse(jsonStr);
 } catch (error) {
     console.log("Unable to open file")
@@ -30,7 +36,7 @@ const createWindow = () => {
         webPreferences: {
             nodeIntegration: true
         },
-        kiosk: false
+        kiosk: true
     });
 
     // and load the index.html of the app.

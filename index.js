@@ -180,18 +180,15 @@ function renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWi
     var salatTime = Math.abs(timeFromPrev);
     $("#time_rem").css("background-color", "green");
     //$("#time_rem").html(namePrev + "<br/>-00:00");
-    var timeToPray = WAITING_TIME - salatTime;
-    if (salatTime < WAITING_TIME) {
+    if (salatTime < WAITING_TIME && !isPrevJuma) {
         $("#time_rem_prayer_name").html("Iqama")
         $("#time_rem_time").html("-" + timeFromPrevWithSec)
         $("#time_rem_prayer_name_ar").html("إقامة")
-        //$("#time_rem").css("background-color", "#bbd8fe");
-        //$("#prayertime_remtime_countdown").html("-" + timeFromPrevWithSec)
-        //$("#prayertime_rem").css("visibility", "visible")
     } else {
         $("#cover").css("display", "block");
         $("#cover_time").html(current + "");
     }
+    //set 100 to make sure display off works in juma time
     saveEnergy(timeFromPrev, 100, isPrevJuma);
 }
 

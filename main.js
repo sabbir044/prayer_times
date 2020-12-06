@@ -11,6 +11,10 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 var jsonObj
 try {
     fileName = `${__dirname}/prayer_times.json`
+    year = new Date().getFullYear()
+    if (year === 2021) {
+        fileName = `${__dirname}/prayer_times_2021.json`
+    }
     if (app.commandLine.hasSwitch('file') === true) {
         fileName = app.commandLine.getSwitchValue('file')
         console.log("fileswitch value: " + fileName)

@@ -24,7 +24,7 @@ var testDate = new Date("2020-10-23T13:15:30");
 
 
 var jsonObj = null;
-var lastMonitorOffTime = new Date();
+var lastMonitorOffTime = new Date().addDays(-1);
 var lastMonitorOnTime = new Date();
 
 function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
@@ -80,7 +80,7 @@ function switchDisplayOff() {
     var diffMS = currentTime - lastMonitorOffTime;
     var diffMins = diffMS / 60000;
 
-    if (diffMins < 5) {
+    if (diffMins < 1) {
         return;
     }
     //xset dpms force off

@@ -1,7 +1,7 @@
 {
     "name": "prayer_time",
     "dependencies": {
-        "electron": "11.0.3",
+        "electron": "11.1.0",
         "electron-squirrel-startup": "^1.0.0"
     },
     "scripts": {

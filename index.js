@@ -13,14 +13,15 @@ var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrij
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 const decoder = new TextDecoder("utf-8");
 
+var WAITING_TIME = 10;
+
 //constants
-const WAITING_TIME = 7;
 const AFTER_PRAYER_DISPLAY_ON_TIME = 20; //make it 20 minutes
 const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2020-10-23T13:15:30");
+var testDate = new Date("2021-06-03T13:44:30");
 
 
 var jsonObj = null;
@@ -49,7 +50,7 @@ function switchDisplayOn() {
         return;
     }
     //xset dpms force on
-    setTimeout(function () {
+    setTimeout(function() {
         console.log("switching diplay on: " + currentTime);
         const child = spawnSync('xset', ['dpms', 'force', 'on']);
         console.log('error', decoder.decode(child.error));
@@ -84,7 +85,7 @@ function switchDisplayOff() {
         return;
     }
     //xset dpms force off
-    setTimeout(function () {
+    setTimeout(function() {
         console.log("switching diplay off: " + currentTime);
         const child = spawnSync('xset', ['dpms', 'force', 'off']);
         console.log('error', decoder.decode(child.error));
@@ -109,7 +110,7 @@ function startJS() {
 
 function loadFile() {
     var fs = require('fs');
-    fs.readFile('prayer_times.json', 'utf8', function (err, data) {
+    fs.readFile('prayer_times.json', 'utf8', function(err, data) {
         jsonObj = JSON.parse(data);
         console.log(jsonObj);
         if (jsonObj != null)
@@ -159,8 +160,7 @@ function getPrayerNamesAndTime(jsonObj, t) {
         if (i == 3 && weekDayOfToday == "Vrijdag") {
             names.push(prayerNames[6]);
             namesAr.push(prayerNamesAr[6]);
-        }
-        else {
+        } else {
             names.push(prayerNames[i - 1]);
             namesAr.push(prayerNamesAr[i - 1]);
         }
@@ -221,7 +221,7 @@ function renderCurrentTime(date) {
     var prayerTimes = getPrayerNamesAndTime(jsonObj, t);
     var idx = -1;
     var current = t.h + ":" + t.m;
-    const currentTime = t
+    const currentTime = t;
     //current = "21:10";
     for (var i = 0; i < 5; i++) {
         if (current < prayerTimes.times[i]) {
@@ -236,6 +236,11 @@ function renderCurrentTime(date) {
     $("#cover").css("display", "none");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
     var timeFromPrevWithSec = timeDiffWithSecond(timePrev, date)
+    if (prevIdx == 3) {
+        WAITING_TIME = 7;
+    } else {
+        WAITING_TIME = 10;
+    }
     if (Math.abs(timeFromPrev) < (PRAYER_TIME + WAITING_TIME)) {
         renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec, namePrev === "Jumu'ah");
     } else if (nextIdx == 5) {
@@ -277,7 +282,7 @@ function timeDiffWithSecond(prayerTime, t1) {
     t2.setDate(t1.getDate());
     t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0);
 
-    delta = Math.floor(Math.abs(t2 - t1) / 1000)
+    delta = Math.floor(Math.abs(t2 - t1) / 1000);
     // calculate (and subtract) whole days
     var days = Math.floor(delta / 86400);
     delta -= days * 86400;

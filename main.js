@@ -12,9 +12,8 @@ var jsonObj
 try {
     fileName = `${__dirname}/prayer_times.json`
     year = new Date().getFullYear()
-    if (year === 2021) {
-        fileName = `${__dirname}/prayer_times_2021.json`
-    }
+    yearFileName = `${__dirname}/prayer_times_${year}.json`
+    fileName = yearFileName
     if (app.commandLine.hasSwitch('file') === true) {
         fileName = app.commandLine.getSwitchValue('file')
         console.log("fileswitch value: " + fileName)
@@ -38,9 +37,10 @@ const createWindow = () => {
         width: 800,
         height: 600,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            contextIsolation: false
         },
-        kiosk: true
+        kiosk: false
     });
 
     // and load the index.html of the app.

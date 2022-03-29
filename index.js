@@ -7,6 +7,22 @@ ipcRenderer.on('prayer-times', (event, arg) => {
     startTime();
 });
 
+/*************************************/
+//cec initialization
+var CecController = require('cec-controller');
+var cecCtl = new CecController();
+var cecController = null
+
+cecCtl.on('ready', (controller) => {
+    console.log(controller);
+    cecController = controller
+});
+cecCtl.on('error', console.error);
+/***************************************/
+
+
+
+
 const { spawnSync } = require('child_process');
 
 var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
@@ -25,7 +41,8 @@ var testDate = new Date("2021-06-03T13:44:30");
 
 
 var jsonObj = null;
-var lastMonitorOffTime = new Date().addDays(-1);
+var lastMonitorOffTime = new Date();
+lastMonitorOffTime.setDate(lastMonitorOffTime.getDate() - 1);
 var lastMonitorOnTime = new Date();
 
 function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
@@ -46,12 +63,17 @@ function switchDisplayOn() {
     var diffMS = currentTime - lastMonitorOnTime;
     var diffMins = diffMS / 60000;
 
-    if (diffMins < 1) {
+    if (diffMins < 0.1) {
         return;
     }
     //xset dpms force on
     setTimeout(function() {
         console.log("switching diplay on: " + currentTime);
+        if (cecController != null) {
+            cecController.dev0.turnOn()
+        }
+        $("#black_cover").css("display", "none");
+        /*
         const child = spawnSync('xset', ['dpms', 'force', 'on']);
         console.log('error', decoder.decode(child.error));
         console.log('stdout ', decoder.decode(child.stdout));
@@ -71,6 +93,7 @@ function switchDisplayOn() {
         console.log('error', decoder.decode(child4.error));
         console.log('stdout ', decoder.decode(child4.stdout));
         console.log('stderr ', decoder.decode(child4.stderr));
+        */
     }, 0);
 
     lastMonitorOnTime = new Date();
@@ -87,10 +110,15 @@ function switchDisplayOff() {
     //xset dpms force off
     setTimeout(function() {
         console.log("switching diplay off: " + currentTime);
+        if (cecController != null) {
+            cecController.dev0.turnOff()
+        }
+        $("#black_cover").css("display", "block");
+        /*
         const child = spawnSync('xset', ['dpms', 'force', 'off']);
         console.log('error', decoder.decode(child.error));
         console.log('stdout ', decoder.decode(child.stdout));
-        console.log('stderr ', decoder.decode(child.stderr));
+        console.log('stderr ', decoder.decode(child.stderr));*/
     }, 1000);
 
     lastMonitorOffTime = new Date();
@@ -233,7 +261,7 @@ function renderCurrentTime(date) {
     var nextIdx = idx + 1;
     var timePrev = prayerTimes.times[prevIdx];
     var namePrev = prayerTimes.names[prevIdx];
-    $("#cover").css("display", "none");
+    //$("#cover").css("display", "none");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
     var timeFromPrevWithSec = timeDiffWithSecond(timePrev, date)
     if (prevIdx == 3) {
@@ -331,3 +359,8 @@ function checkTime(i) {
     if (i < 10) { i = "0" + i }; // add zero in front of numbers < 10
     return i;
 }
+
+//switch display on key press
+window.addEventListener("keydown", function (event) {
+    switchDisplayOn();
+}, true);

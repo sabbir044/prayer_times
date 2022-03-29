@@ -1,7 +1,8 @@
 {
     "name": "prayer_time",
     "dependencies": {
-        "electron": "11.0.3",
+        "cec-controller": "^1.4.0",
+        "electron": "^17.1.2",
         "electron-squirrel-startup": "^1.0.0"
     },
     "scripts": {

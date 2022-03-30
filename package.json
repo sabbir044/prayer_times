@@ -2,15 +2,20 @@
     "name": "prayer_time",
     "dependencies": {
         "cec-controller": "^1.4.0",
-        "electron": "^17.1.2",
         "electron-squirrel-startup": "^1.0.0"
     },
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "build-all": "electron-packager . prayer_time --platform=all --arch=all --out=out --overwrite",
+        "build-arm": "electron-packager . prayer_time --platform=linux --arch=armv7l --out=out --overwrite"
     },
     "main": "main.js",
     "version": "0.0.0",
     "license": "MIT",
     "description": "",
-    "author": "Sabbir Ahmed"
+    "author": "Sabbir Ahmed",
+    "devDependencies": {
+        "electron": "^17.1.2",
+        "electron-packager": "^15.4.0"
+    }
 }

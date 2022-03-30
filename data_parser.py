@@ -101,4 +101,4 @@ def createPrayerTimeFileForNewYear(year:int):
     print("done with file: {}".format(newFileName))
 
 if __name__ == "__main__":
-    createPrayerTimeFileForNewYear(2022)
+    createPrayerTimeFileForNewYear(2023)

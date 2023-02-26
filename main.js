@@ -40,7 +40,7 @@ const createWindow = () => {
             nodeIntegration: true,
             contextIsolation: false
         },
-        kiosk: true
+        kiosk: false
     });
 
     // and load the index.html of the app.

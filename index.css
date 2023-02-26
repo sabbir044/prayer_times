@@ -71,12 +71,44 @@ body {
 }
 
 #time_rem_prayer_name {
-    flex: 1
+    flex: 1;
 }
 
 #time_rem_prayer_name_ar {
-    flex: 1
+    flex: 1;
 }
+
+#before_iqama {
+    display: none;
+    position: absolute;
+    text-align: center;
+    top: 27vh;
+    width: 65vw;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#iqama_text {
+    font-size: 10vh;
+}
+
+#time_rem_iqama {
+    font-size: 10vh;
+    font-weight: bold;
+}
+
+#progress_bar {
+    width: 100%;
+    height: 3vh;
+    background-color: #f2f2f2;
+    border-radius: 15px;
+}
+
+#progress {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 15px;
+  }
 
 #prayer_times {
     background-color: #e3e3e3;

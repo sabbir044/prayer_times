@@ -37,7 +37,8 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-02-26T20:10:00");
+var testDate = new Date("2023-02-26T20:05:50");
+var baseDate = new Date()
 
 
 var jsonObj = null;
@@ -126,7 +127,12 @@ function switchDisplayOff() {
 
 function startTime() {
     var now = new Date();
-    // now = testDate;
+    /**** test code  ***/
+    sinceBase  = now.valueOf() - baseDate.valueOf()
+    testWithSince  = testDate.valueOf() + sinceBase
+    now = new Date(testWithSince);
+    /*** test code finish ***/
+
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -204,14 +210,18 @@ function renderTimeAndDate(t) {
     $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
 }
 
-function renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec, isPrevJuma) {
-    var salatTime = Math.abs(timeFromPrev);
-    $("#time_rem").css("background-color", "green");
+function renderSlalatTimeDisplay(timeFromPrev, namePrev, timeToIqamaPercent, timeToIqamaWithSec, isPrevJuma) {
+    var timeSinceAzaan = Math.abs(timeFromPrev);
     //$("#time_rem").html(namePrev + "<br/>-00:00");
-    if (salatTime < WAITING_TIME && !isPrevJuma) {
+    if (timeSinceAzaan < WAITING_TIME && !isPrevJuma) {
+        $("#time_rem").css("display", "none");
+        $("#before_iqama").css("display","flex");
+        $("#time_rem_iqama").html("-"+timeToIqamaWithSec);
+        updateProgressBar(timeToIqamaPercent, timeToIqamaWithSec);
+        /*
         $("#time_rem_prayer_name").html("Iqama")
         $("#time_rem_time").html("-" + timeFromPrevWithSec)
-        $("#time_rem_prayer_name_ar").html("إقامة")
+        $("#time_rem_prayer_name_ar").html("إقامة")*/
     } else {
         $("#cover").css("display", "block");
     }
@@ -249,7 +259,6 @@ function renderCurrentTime(date) {
     var idx = -1;
     var current = t.h + ":" + t.m;
     const currentTime = t;
-    //current = "21:10";
     for (var i = 0; i < 5; i++) {
         if (current < prayerTimes.times[i]) {
             break;
@@ -262,17 +271,20 @@ function renderCurrentTime(date) {
     var namePrev = prayerTimes.names[prevIdx];
     //$("#cover").css("display", "none");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
-    var timeFromPrevWithSec = timeDiffWithSecond(timePrev, date)
     if (prevIdx == 3) {
         WAITING_TIME = 7;
     } else {
         WAITING_TIME = 10;
     }
     if (Math.abs(timeFromPrev) < (PRAYER_TIME + WAITING_TIME)) {
-        renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWithSec, namePrev === "Jumu'ah");
+        var timeToIqamaWithSec = getTimeToIqamaWithSec(timePrev, date)
+        var timeToIqamaPercent = getTimeToIqamaPercent(timePrev, date)
+        renderSlalatTimeDisplay(timeFromPrev, namePrev, timeToIqamaPercent, timeToIqamaWithSec, namePrev === "Jumu'ah");
     } else if (nextIdx == 5) {
+        $("#time_rem").css("display", "flex");
         renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
     } else {
+        $("#time_rem").css("display", "flex");
         $("#time_rem").css("background-color", "#f2e8e2");
         var timeNext = prayerTimes.times[nextIdx];
         var nameNext = prayerTimes.names[nextIdx];
@@ -301,7 +313,7 @@ function timeDiffInMinute(from, to) {
     return diffMins;
 }
 
-function timeDiffWithSecond(prayerTime, t1) {
+function getTimeToIqamaWithSec(prayerTime, t1) {
     hhmm = prayerTime.split(":")
 
     var t2 = new Date();
@@ -329,6 +341,24 @@ function timeDiffWithSecond(prayerTime, t1) {
     seconds = checkTime(seconds)
     return `${minutes}:${seconds}`
 }
+
+function getTimeToIqamaPercent(prayerTime, t1) {
+    hhmm = prayerTime.split(":")
+
+    var t2 = new Date();
+    t2.setMonth(t1.getMonth());
+    t2.setDate(t1.getDate());
+    t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0);
+
+    delta = Math.abs(t2 - t1) ;
+    waitingTimeMs = WAITING_TIME * 60 * 1000 ;
+    if (delta > waitingTimeMs) {
+        return 100
+    } 
+    return delta * 100 / waitingTimeMs;
+}
+
+
 
 
 function renderPrayerTimes(date) {
@@ -358,6 +388,16 @@ function checkTime(i) {
     if (i < 10) { i = "0" + i }; // add zero in front of numbers < 10
     return i;
 }
+
+function updateProgressBar(progress, timeToIqamaWithSec) {
+    $("#progress").css("width",progress+"%");
+    mmss = timeToIqamaWithSec.split(":")
+    if (mmss[0] == "00") {
+        $("#progress").css("background-color","orange")
+    } else {
+        $("#progress").css("background-color","#4CAF50")
+    }
+  }
 
 //switch display on key press
 window.addEventListener("keydown", function (event) {

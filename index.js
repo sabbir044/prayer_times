@@ -37,7 +37,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2021-06-03T13:44:30");
+var testDate = new Date("2023-02-26T20:10:00");
 
 
 var jsonObj = null;
@@ -126,7 +126,7 @@ function switchDisplayOff() {
 
 function startTime() {
     var now = new Date();
-    //now = testDate;
+    // now = testDate;
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
@@ -214,7 +214,6 @@ function renderSlalatTimeDisplay(timeFromPrev, namePrev, current, timeFromPrevWi
         $("#time_rem_prayer_name_ar").html("إقامة")
     } else {
         $("#cover").css("display", "block");
-        $("#cover_time").html(current + "");
     }
     //set 100 to make sure display off works in juma time
     saveEnergy(timeFromPrev, 100, isPrevJuma);

@@ -177,6 +177,7 @@ body {
     text-align: center;
 }
 
+/*
 #cover_time {
     position: absolute;
     left: 50%;
@@ -185,6 +186,7 @@ body {
     transform: translate(-50%, 0%);
     text-align: center;
 }
+*/
 .tab {
     padding-left: 1%;
 }

@@ -9,6 +9,11 @@ body {
     height: 100vh;
 }
 
+@font-face {
+    font-family: amiriquran;
+    src: url("fonts/AmiriQuran.ttf");
+}
+
 #main {
     height: 100vh;
 }
@@ -207,6 +212,7 @@ body {
     transform: translate(-50%, -50%);
     -ms-transform: translate(-50%, -50%);
     text-align: center;
+    font-family: amiriquran;
 }
 
 /*

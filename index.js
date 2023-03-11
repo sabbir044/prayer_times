@@ -37,7 +37,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-02-26T20:05:50");
+var testDate = new Date("2023-03-11T20:20:50");
 var baseDate = new Date()
 
 

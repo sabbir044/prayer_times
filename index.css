@@ -81,6 +81,8 @@ body {
 
 #time_rem_prayer_name_ar {
     flex: 1;
+    font-family: amiriquran;
+    line-height: .75;
 }
 
 #before_iqama {
@@ -139,31 +141,31 @@ body {
 #fadjr {
     background-color:#4a6c94;
     color: white;
-    padding-top: 1%;
+    padding-top: 0%;
 }
 
 #dohr {
     background-color: gray;
     color: white;
-    padding-top: 1%;
+    padding-top: 0%;
 }
 
 #asr {
     color: white;
     background-color: slategray;
-    padding-top: 1%;
+    padding-top: 0%;
 }
 
 #magrib {
     color: white;
     background-color: #2F4F4F;
-    padding-top: 1%;
+    padding-top: 0%;
 }
 
 #isha {
     color: white;
     background-color: black;
-    padding-top: 1%;
+    padding-top: 0%;
 }
 
 #banner {
@@ -213,6 +215,12 @@ body {
     -ms-transform: translate(-50%, -50%);
     text-align: center;
     font-family: amiriquran;
+    line-height: 100%;
+}
+
+.ar_text {
+    font-family: amiriquran;
+    line-height: 1.5;
 }
 
 /*

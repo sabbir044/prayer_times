@@ -15,7 +15,7 @@
     "description": "",
     "author": "Sabbir Ahmed",
     "devDependencies": {
-        "electron": "^17.1.2",
+        "electron": "^18.3.7",
         "electron-packager": "^15.4.0"
     }
 }

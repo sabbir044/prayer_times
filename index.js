@@ -128,9 +128,9 @@ function switchDisplayOff() {
 function startTime() {
     var now = new Date();
     /**** test code  ***/
-    sinceBase  = now.valueOf() - baseDate.valueOf()
-    testWithSince  = testDate.valueOf() + sinceBase
-    now = new Date(testWithSince);
+    // sinceBase  = now.valueOf() - baseDate.valueOf()
+    // testWithSince  = testDate.valueOf() + sinceBase
+    // now = new Date(testWithSince);
     /*** test code finish ***/
 
     renderPrayerTimes(now);

@@ -37,7 +37,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-03-11T20:20:50");
+var testDate = new Date("2023-03-11T20:19:50");
 var baseDate = new Date()
 
 
@@ -136,29 +136,6 @@ function startTime() {
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
-}
-
-function startJS() {
-    loadFile();
-}
-
-function loadFile() {
-    var fs = require('fs');
-    fs.readFile('prayer_times.json', 'utf8', function(err, data) {
-        jsonObj = JSON.parse(data);
-        console.log(jsonObj);
-        if (jsonObj != null)
-            startTime();
-    });
-    /*
-    $.getJSON('prayer_times.json', function(data) {
-        jsonObj = data;
-        console.log(jsonObj);
-        if (jsonObj != null)
-            startTime();
-    });
-    */
-
 }
 
 function getFormattedTimes(today) {

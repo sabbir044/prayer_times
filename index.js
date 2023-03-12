@@ -37,7 +37,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-03-11T20:19:50");
+var testDate = new Date("2023-03-11T18:36:50");
 var baseDate = new Date()
 
 
@@ -158,7 +158,7 @@ function getFormattedTimes(today) {
 
 function getPrayerNamesAndTime(jsonObj, t) {
     var prayerNames = ["Fadjr", "", "Dohr", "Asr", "Maghreb", "Isha", "Jumu'ah"];
-    var prayerNamesAr = ["الفجر", "", "الظُهر", "العصر", "المغرب", "العِشاء", "الجمع"];
+    var prayerNamesAr = ["الفجر", "", "الظهر", "العصر", "المغرب", "العشاء", "الجمع"];
     var prayerTimes = jsonObj.times[t.mm][t.dd];
     var tx = {}
     var times = [];

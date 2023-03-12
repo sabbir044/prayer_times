@@ -223,6 +223,11 @@ body {
     line-height: 1.5;
 }
 
+.ar_text_iqama {
+    font-family: amiriquran;
+    line-height: 1.0;
+}
+
 /*
 #cover_time {
     position: absolute;

@@ -64,3 +64,6 @@ typings/
 out/
 release/
 202*/
+
+#others
+.DS_Store

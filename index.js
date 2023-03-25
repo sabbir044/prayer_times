@@ -246,7 +246,7 @@ function renderCurrentTime(date) {
     var nextIdx = idx + 1;
     var timePrev = prayerTimes.times[prevIdx];
     var namePrev = prayerTimes.names[prevIdx];
-    //$("#cover").css("display", "none");
+    $("#cover").css("display", "none");
     var timeFromPrev = timeDiffInMinute(timePrev, current);
     if (prevIdx == 3) {
         WAITING_TIME = 7;

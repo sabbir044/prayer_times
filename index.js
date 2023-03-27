@@ -9,6 +9,7 @@ ipcRenderer.on('prayer-times', (event, arg) => {
 
 /*************************************/
 //cec initialization
+/*
 var CecController = require('cec-controller');
 var cecCtl = new CecController();
 var cecController = null
@@ -18,9 +19,20 @@ cecCtl.on('ready', (controller) => {
     cecController = controller
 });
 cecCtl.on('error', console.error);
+*/
 /***************************************/
 
 
+class CurrentScreen {
+    static SCREEN_OFF_BLACK = new CurrentScreen("OFF_BLACK");
+    static SCREEN_ON_BEFORE_AZAAN = new CurrentScreen("ON_BEFORE_AZAAN");
+    static SCREEN_ON_BEFORE_IQAMA = new CurrentScreen("ON_BEFORE_IQAMA");
+    static SCREEN_ON_SALAT = new CurrentScreen("ON_SALAT");
+    static SCREEN_ON_AFTER_SALAT = new CurrentScreen("ON_AFTER_SALAT");
+    constructor(name) {
+        this.name = name;
+    }
+}
 
 
 const { spawnSync } = require('child_process');
@@ -37,8 +49,9 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-03-27T13:14:50");
-var baseDate = new Date()
+var testDate = new Date("2023-04-07T17:31:40");
+var baseDate = new Date();
+var currentScreenState = CurrentScreen.SCREEN_OFF_BLACK;
 
 
 var jsonObj = null;
@@ -46,10 +59,10 @@ var lastMonitorOffTime = new Date();
 lastMonitorOffTime.setDate(lastMonitorOffTime.getDate() - 1);
 var lastMonitorOnTime = new Date();
 
-function saveEnergy(minuteFromPrev, minuteToNext, isPrevJuma) {
+function saveEnergy(minuteFromPrev, minuteToNext, waitingTime, isPrevJuma) {
     minuteFromPrev = Math.abs(minuteFromPrev)
     minuteToNext = Math.abs(minuteToNext)
-    prayerONTime = WAITING_TIME + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
+    prayerONTime = waitingTime + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
     if (isPrevJuma && minuteFromPrev > JUMA_PRAYER_DISPLAY_ON_TIME && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
         switchDisplayOff();
     } else if (minuteFromPrev > prayerONTime && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
@@ -70,9 +83,11 @@ function switchDisplayOn() {
     //xset dpms force on
     setTimeout(function() {
         console.log("switching diplay on: " + currentTime);
+        /*
         if (cecController != null) {
             cecController.dev0.turnOn()
-        }
+        } 
+        */
         $("#black_cover").css("display", "none");
         /*
         const child = spawnSync('xset', ['dpms', 'force', 'on']);
@@ -111,9 +126,11 @@ function switchDisplayOff() {
     //xset dpms force off
     setTimeout(function() {
         console.log("switching diplay off: " + currentTime);
+        /*
         if (cecController != null) {
             cecController.dev0.turnOff()
         }
+        */
         $("#black_cover").css("display", "block");
         /*
         const child = spawnSync('xset', ['dpms', 'force', 'off']);
@@ -133,9 +150,79 @@ function startTime() {
     // now = new Date(testWithSince);
     /*** test code finish ***/
 
+    //
+    var newScreenState = calculateWhatToShow(now);
+    console.log(newScreenState.name)
+    if (currentScreenState !== CurrentScreen.SCREEN_ON_SALAT && newScreenState === CurrentScreen.SCREEN_ON_SALAT) {
+        playSound();
+    }
+    currentScreenState = newScreenState
+    //
     renderPrayerTimes(now);
     renderCurrentTime(now);
     var t = setTimeout(startTime, 500);
+}
+
+function calculateWhatToShow(date) {
+    var t = getFormattedTimes(date);
+    //countdown
+    var prayerTimes = getPrayerNamesAndTime(jsonObj, t);
+    var idx = -1;
+    var current = t.h + ":" + t.m;
+    for (var i = 0; i < 5; i++) {
+        if (current < prayerTimes.times[i]) {
+            break;
+        }
+        idx = i;
+    }
+    var prevIdx = (idx + 5) % 5;
+    var nextIdx = idx + 1;
+    var timePrev = prayerTimes.times[prevIdx];
+    var namePrev = prayerTimes.names[prevIdx];
+    var minuteFromPrev = Math.abs(timeDiffInMinute(timePrev, current));
+    var minuteToNext = 0
+
+
+    if (nextIdx === 5) {
+        // tomorrow fajr time
+        var tomorrow = addDays(t.date, 1)
+        var tmm = tomorrow.getMonth() + 1;
+        var tdd = tomorrow.getDate();
+        var prayerTime = jsonObj.times[tmm][tdd].p1.t;
+        var timeToNext = timeDiffInMinute(current, prayerTime)
+        if (timeToNext < 0) {
+          timeToNext = 24 * 60 + timeToNext;
+        }
+        var minuteToNext = timeToNext;
+
+    } else {
+        var timeNext = prayerTimes.times[nextIdx];
+        minuteToNext = Math.abs(timeDiffInMinute(current, timeNext));
+    }
+
+    waitingTimeMinute = WAITING_TIME
+    if (prevIdx == 3) {
+        waitingTimeMinute = 7;
+    }
+    prayerONTime = waitingTimeMinute + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
+
+    if (namePrev === "Jumu'ah" && minuteFromPrev < 60) {
+        return CurrentScreen.SCREEN_OFF_BLACK 
+    } else if (minuteFromPrev > prayerONTime && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
+        return CurrentScreen.SCREEN_OFF_BLACK
+    } else if (minuteToNext <= BEFORE_PRAYER_DISPLAY_ON_TIME) {
+        return CurrentScreen.SCREEN_ON_BEFORE_AZAAN
+    } else if (minuteFromPrev < waitingTimeMinute) {
+        return CurrentScreen.SCREEN_ON_BEFORE_IQAMA
+    } else if (minuteFromPrev < (waitingTimeMinute + PRAYER_TIME)) {
+        return CurrentScreen.SCREEN_ON_SALAT
+    } else {
+        return CurrentScreen.SCREEN_ON_AFTER_SALAT
+    }
+}
+
+function playSound(){
+    new Audio("audio/beep-01a.mp3").play();
 }
 
 function getFormattedTimes(today) {
@@ -203,7 +290,7 @@ function renderSlalatTimeDisplay(timeFromPrev, namePrev, timeToIqamaPercent, tim
         $("#cover").css("display", "block");
     }
     //set 100 to make sure display off works in juma time
-    saveEnergy(timeFromPrev, 100, isPrevJuma);
+    saveEnergy(timeFromPrev, 100, WAITING_TIME, isPrevJuma);
 }
 
 function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev) {
@@ -224,7 +311,7 @@ function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev)
     $("#time_rem_prayer_name").html(nameNext)
     $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
     $("#time_rem_prayer_name_ar").html(nameNextAr)
-    saveEnergy(timeFromPrev, timeToNext, 0);
+    saveEnergy(timeFromPrev, timeToNext, WAITING_TIME, 0);
 }
 
 function renderCurrentTime(date) {
@@ -274,7 +361,7 @@ function renderCurrentTime(date) {
         $("#time_rem_prayer_name").html(nameNext)
         $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
         $("#time_rem_prayer_name_ar").html(nameNextAr)
-        saveEnergy(timeFromPrev, timeToNext, namePrev === "Jumu'ah");
+        saveEnergy(timeFromPrev, timeToNext, WAITING_TIME, namePrev === "Jumu'ah");
     }
 }
 

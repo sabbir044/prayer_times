@@ -37,7 +37,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-03-11T18:36:50");
+var testDate = new Date("2023-03-27T13:14:50");
 var baseDate = new Date()
 
 
@@ -258,9 +258,11 @@ function renderCurrentTime(date) {
         var timeToIqamaPercent = getTimeToIqamaPercent(timePrev, date)
         renderSlalatTimeDisplay(timeFromPrev, namePrev, timeToIqamaPercent, timeToIqamaWithSec, namePrev === "Jumu'ah");
     } else if (nextIdx == 5) {
+        $("#before_iqama").css("display","none")
         $("#time_rem").css("display", "flex");
         renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
     } else {
+        $("#before_iqama").css("display","none")
         $("#time_rem").css("display", "flex");
         $("#time_rem").css("background-color", "#f2e8e2");
         var timeNext = prayerTimes.times[nextIdx];

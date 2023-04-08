@@ -49,7 +49,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-04-07T17:31:40");
+var testDate = new Date("2023-04-09T20:34:40");
 var baseDate = new Date();
 var currentScreenState = CurrentScreen.SCREEN_OFF_BLACK;
 
@@ -222,7 +222,7 @@ function calculateWhatToShow(date) {
 }
 
 function playSound(){
-    new Audio("audio/beep-01a.mp3").play();
+    new Audio("audio/beep-02.mp3").play();
 }
 
 function getFormattedTimes(today) {

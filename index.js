@@ -49,7 +49,7 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-04-09T20:34:40");
+var testDate = new Date("2023-04-21T04:59:50");
 var baseDate = new Date();
 var currentScreenState = CurrentScreen.SCREEN_OFF_BLACK;
 
@@ -442,7 +442,7 @@ function renderPrayerTimes(date) {
         $("#dohr_ar").html("الجمع")
     } else {
         $("#dohr_en").html("Dohr")
-        $("#dohr_ar").html("الظُهر")
+        $("#dohr_ar").html("الظهر")
     }
     $("#dohr_time").html(prayerTimes.p3.t)
     $("#asr_time").html(prayerTimes.p4.t)

@@ -1,9 +1,12 @@
 const { ipcRenderer } = require('electron')
 
 
+var prayerTimeData = null;
+
 ipcRenderer.on('prayer-times', (event, arg) => {
     console.log(arg);
-    jsonObj = arg;
+    prayerTimeData = arg;
+    playSoundFourBeep();
     startTime();
 });
 
@@ -53,8 +56,10 @@ var testDate = new Date("2023-04-21T04:59:50");
 var baseDate = new Date();
 var currentScreenState = CurrentScreen.SCREEN_OFF_BLACK;
 
+var soundFourBeep = new Audio("audio/four_beep.mp3");
+var soundTwoBeep = new Audio("audio/two_beep.mp3");
 
-var jsonObj = null;
+
 var lastMonitorOffTime = new Date();
 lastMonitorOffTime.setDate(lastMonitorOffTime.getDate() - 1);
 var lastMonitorOnTime = new Date();
@@ -145,16 +150,20 @@ function switchDisplayOff() {
 function startTime() {
     var now = new Date();
     /**** test code  ***/
-    // sinceBase  = now.valueOf() - baseDate.valueOf()
-    // testWithSince  = testDate.valueOf() + sinceBase
-    // now = new Date(testWithSince);
+    sinceBase  = now.valueOf() - baseDate.valueOf()
+    testWithSince  = testDate.valueOf() + sinceBase
+    now = new Date(testWithSince);
     /*** test code finish ***/
 
     //
     var newScreenState = calculateWhatToShow(now);
     console.log(newScreenState.name)
-    if (currentScreenState !== CurrentScreen.SCREEN_ON_SALAT && newScreenState === CurrentScreen.SCREEN_ON_SALAT) {
-        playSound();
+    if (currentScreenState !== CurrentScreen.SCREEN_ON_SALAT && 
+        newScreenState === CurrentScreen.SCREEN_ON_SALAT) {
+        playSoundFourBeep();
+    }else if (currentScreenState !== CurrentScreen.SCREEN_ON_BEFORE_IQAMA && 
+        newScreenState === CurrentScreen.SCREEN_ON_BEFORE_IQAMA) {
+        playSoundTwoBeep();
     }
     currentScreenState = newScreenState
     //
@@ -166,7 +175,7 @@ function startTime() {
 function calculateWhatToShow(date) {
     var t = getFormattedTimes(date);
     //countdown
-    var prayerTimes = getPrayerNamesAndTime(jsonObj, t);
+    var prayerTimes = getPrayerNamesAndTime(prayerTimeData, t);
     var idx = -1;
     var current = t.h + ":" + t.m;
     for (var i = 0; i < 5; i++) {
@@ -188,7 +197,7 @@ function calculateWhatToShow(date) {
         var tomorrow = addDays(t.date, 1)
         var tmm = tomorrow.getMonth() + 1;
         var tdd = tomorrow.getDate();
-        var prayerTime = jsonObj.times[tmm][tdd].p1.t;
+        var prayerTime = prayerTimeData.times[tmm][tdd].p1.t;
         var timeToNext = timeDiffInMinute(current, prayerTime)
         if (timeToNext < 0) {
           timeToNext = 24 * 60 + timeToNext;
@@ -221,8 +230,14 @@ function calculateWhatToShow(date) {
     }
 }
 
-function playSound(){
-    new Audio("audio/beep-02.mp3").play();
+function playSoundFourBeep(){
+    soundFourBeep.play();
+    //new Audio("audio/four_beep.mp3").play();
+}
+
+function playSoundTwoBeep(){
+    soundTwoBeep.play();
+    //new Audio("audio/two_beep.mp3").play();
 }
 
 function getFormattedTimes(today) {
@@ -319,7 +334,7 @@ function renderCurrentTime(date) {
     renderTimeAndDate(t);
 
     //countdown
-    var prayerTimes = getPrayerNamesAndTime(jsonObj, t);
+    var prayerTimes = getPrayerNamesAndTime(prayerTimeData, t);
     var idx = -1;
     var current = t.h + ":" + t.m;
     const currentTime = t;
@@ -347,7 +362,7 @@ function renderCurrentTime(date) {
     } else if (nextIdx == 5) {
         $("#before_iqama").css("display","none")
         $("#time_rem").css("display", "flex");
-        renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev);
+        renderTomorrowFadjrTime(prayerTimeData, t, current, prayerTimes, timeFromPrev);
     } else {
         $("#before_iqama").css("display","none")
         $("#time_rem").css("display", "flex");
@@ -428,12 +443,12 @@ function getTimeToIqamaPercent(prayerTime, t1) {
 
 
 function renderPrayerTimes(date) {
-    if (jsonObj == null)
+    if (prayerTimeData == null)
         return;
     var today = date;
     var mm = today.getMonth() + 1;
     var dd = today.getDate();
-    prayerTimes = jsonObj.times[mm][dd];
+    prayerTimes = prayerTimeData.times[mm][dd];
     //Fadjr
     $("#fadjr_time").html(prayerTimes.p1.t)
     weekDayOfToday = weekDaysNL[today.getDay()]

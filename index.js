@@ -4,45 +4,82 @@ const { ipcRenderer } = require('electron')
 var prayerTimeData = null;
 
 ipcRenderer.on('prayer-times', (event, arg) => {
-    console.log(arg);
     prayerTimeData = arg;
     playSoundFourBeep();
-    startTime();
+    renderUI();
 });
-
-/*************************************/
-//cec initialization
-/*
-var CecController = require('cec-controller');
-var cecCtl = new CecController();
-var cecController = null
-
-cecCtl.on('ready', (controller) => {
-    console.log(controller);
-    cecController = controller
-});
-cecCtl.on('error', console.error);
-*/
-/***************************************/
-
-
-class CurrentScreen {
-    static SCREEN_OFF_BLACK = new CurrentScreen("OFF_BLACK");
-    static SCREEN_ON_BEFORE_AZAAN = new CurrentScreen("ON_BEFORE_AZAAN");
-    static SCREEN_ON_BEFORE_IQAMA = new CurrentScreen("ON_BEFORE_IQAMA");
-    static SCREEN_ON_SALAT = new CurrentScreen("ON_SALAT");
-    static SCREEN_ON_AFTER_SALAT = new CurrentScreen("ON_AFTER_SALAT");
+class ScreenState {
+    static SCREEN_OFF_BLACK = new ScreenState("OFF_BLACK");
+    static SCREEN_ON_BEFORE_AZAAN = new ScreenState("ON_BEFORE_AZAAN");
+    static SCREEN_ON_BEFORE_IQAMA = new ScreenState("ON_BEFORE_IQAMA");
+    static SCREEN_ON_SALAT = new ScreenState("ON_SALAT");
+    static SCREEN_ON_AFTER_SALAT = new ScreenState("ON_AFTER_SALAT");
     constructor(name) {
         this.name = name;
     }
 }
 
+class TimeInformation {
+    h;
+    m;
+    s;
+    YY;
+    mm;
+    dd;
+    MM;
+    DD;
+    date;
+    constructor(date) {
+        let h = date.getHours();
+        let m = date.getMinutes();
+        let s = date.getSeconds();
+        this.h = checkTime(h);
+        this.m = checkTime(m);
+        this.s = checkTime(s);
+        this.YY = date.getFullYear();
+        this.mm = date.getMonth() + 1;
+        this.dd = date.getDate();
+        this.MM = checkTime(this.mm);
+        this.DD = checkTime(this.dd);
+        this.date = date;
+    }
+}
 
-const { spawnSync } = require('child_process');
+class PrayerInformation {
+    prevIdx;
+    namePrev;
+    timePrev;
+    minuteFromPrev;
+    nextIdx;
+    nameNext;
+    nameNextAr;
+    minuteToNext;
+
+    constructor(prevIdx, namePrev, timePrev, minuteFromPrev,nextIdx, nameNext, nameNextAr, minuteToNext) {
+        this.prevIdx = prevIdx;
+        this.namePrev = namePrev;
+        this.timePrev = timePrev;
+        this.minuteFromPrev = minuteFromPrev;
+        this.nextIdx = nextIdx;
+        this.nameNext = nameNext;
+        this.nameNextAr = nameNextAr;
+        this.minuteToNext = minuteToNext;
+    }
+}
+
+class DisplayInformation {
+    screenState; // ScreenState
+    timeInformation; // TimeInformation
+    prayerInformation; // PrayerInformation
+    constructor(screenState, timeInformation, prayerInformation) {
+        this.screenState = screenState;
+        this.timeInformation = timeInformation;
+        this.prayerInformation = prayerInformation;
+    }
+}
 
 var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
-const decoder = new TextDecoder("utf-8");
 
 var WAITING_TIME = 10;
 
@@ -52,9 +89,9 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-04-21T04:59:50");
+var testDate = new Date("2023-04-22T13:45:50");
 var baseDate = new Date();
-var currentScreenState = CurrentScreen.SCREEN_OFF_BLACK;
+var currentScreenState = ScreenState.SCREEN_OFF_BLACK;
 
 var soundFourBeep = new Audio("audio/four_beep.mp3");
 var soundTwoBeep = new Audio("audio/two_beep.mp3");
@@ -62,92 +99,10 @@ var soundTwoBeep = new Audio("audio/two_beep.mp3");
 
 var lastMonitorOffTime = new Date();
 lastMonitorOffTime.setDate(lastMonitorOffTime.getDate() - 1);
-var lastMonitorOnTime = new Date();
+var lastKeyPressedTime = new Date(lastMonitorOffTime.getTime())
 
-function saveEnergy(minuteFromPrev, minuteToNext, waitingTime, isPrevJuma) {
-    minuteFromPrev = Math.abs(minuteFromPrev)
-    minuteToNext = Math.abs(minuteToNext)
-    prayerONTime = waitingTime + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
-    if (isPrevJuma && minuteFromPrev > JUMA_PRAYER_DISPLAY_ON_TIME && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
-        switchDisplayOff();
-    } else if (minuteFromPrev > prayerONTime && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
-        switchDisplayOff();
-    } else {
-        switchDisplayOn();
-    }
-}
-
-function switchDisplayOn() {
-    var currentTime = new Date();
-    var diffMS = currentTime - lastMonitorOnTime;
-    var diffMins = diffMS / 60000;
-
-    if (diffMins < 0.1) {
-        return;
-    }
-    //xset dpms force on
-    setTimeout(function() {
-        console.log("switching diplay on: " + currentTime);
-        /*
-        if (cecController != null) {
-            cecController.dev0.turnOn()
-        } 
-        */
-        $("#black_cover").css("display", "none");
-        /*
-        const child = spawnSync('xset', ['dpms', 'force', 'on']);
-        console.log('error', decoder.decode(child.error));
-        console.log('stdout ', decoder.decode(child.stdout));
-        console.log('stderr ', decoder.decode(child.stderr));
-
-        const child2 = spawnSync('xset', ['s', 'noblank']);
-        console.log('error', decoder.decode(child2.error));
-        console.log('stdout ', decoder.decode(child2.stdout));
-        console.log('stderr ', decoder.decode(child2.stderr));
-
-        const child3 = spawnSync('xset', ['s', 'off']);
-        console.log('error', decoder.decode(child3.error));
-        console.log('stdout ', decoder.decode(child3.stdout));
-        console.log('stderr ', decoder.decode(child3.stderr));
-
-        const child4 = spawnSync('xset', ['dpms']);
-        console.log('error', decoder.decode(child4.error));
-        console.log('stdout ', decoder.decode(child4.stdout));
-        console.log('stderr ', decoder.decode(child4.stderr));
-        */
-    }, 0);
-
-    lastMonitorOnTime = new Date();
-}
-
-function switchDisplayOff() {
-    var currentTime = new Date();
-    var diffMS = currentTime - lastMonitorOffTime;
-    var diffMins = diffMS / 60000;
-
-    if (diffMins < 1) {
-        return;
-    }
-    //xset dpms force off
-    setTimeout(function() {
-        console.log("switching diplay off: " + currentTime);
-        /*
-        if (cecController != null) {
-            cecController.dev0.turnOff()
-        }
-        */
-        $("#black_cover").css("display", "block");
-        /*
-        const child = spawnSync('xset', ['dpms', 'force', 'off']);
-        console.log('error', decoder.decode(child.error));
-        console.log('stdout ', decoder.decode(child.stdout));
-        console.log('stderr ', decoder.decode(child.stderr));*/
-    }, 1000);
-
-    lastMonitorOffTime = new Date();
-}
-
-function startTime() {
+function renderUI() {
+    var beginTime = new Date()
     var now = new Date();
     /**** test code  ***/
     // sinceBase  = now.valueOf() - baseDate.valueOf()
@@ -156,28 +111,89 @@ function startTime() {
     /*** test code finish ***/
 
     //
-    var newScreenState = calculateWhatToShow(now);
-    console.log(newScreenState.name)
-    if (currentScreenState !== CurrentScreen.SCREEN_ON_SALAT && 
-        newScreenState === CurrentScreen.SCREEN_ON_SALAT) {
-        playSoundFourBeep();
-    }else if (currentScreenState !== CurrentScreen.SCREEN_ON_BEFORE_IQAMA && 
-        newScreenState === CurrentScreen.SCREEN_ON_BEFORE_IQAMA) {
-        playSoundTwoBeep();
-    }
-    currentScreenState = newScreenState
-    //
-    renderPrayerTimes(now);
-    renderCurrentTime(now);
-    var t = setTimeout(startTime, 500);
+    let timeInformation = new TimeInformation(now);
+    let displayInformation = calculateWhatToShow(timeInformation);
+    prevScreenState = currentScreenState
+    currentScreenState = displayInformation.screenState
+
+    
+    showUIState(displayInformation, prevScreenState)
+
+    setTimeout(renderUI, 100);
 }
 
-function calculateWhatToShow(date) {
-    var t = getFormattedTimes(date);
+function showUIState(newDisplayInformation, prevScreenState) {
+    switch (newDisplayInformation.screenState) {
+        case ScreenState.SCREEN_OFF_BLACK:
+            $("#black_cover").css("display", "block");
+            break;
+        case ScreenState.SCREEN_ON_BEFORE_AZAAN:
+            if (prevScreenState != ScreenState.SCREEN_ON_BEFORE_AZAAN) {
+                renderPrayerTimes(newDisplayInformation.timeInformation);
+                $("#black_cover").css("display", "none");
+                $("#cover").css("display", "none");
+                $("#before_iqama").css("display", "none")
+                $("#time_rem").css("display", "flex");
+            }
+            renderTimeRemainingPrayerName(newDisplayInformation)
+            break;
+        case ScreenState.SCREEN_ON_BEFORE_IQAMA:
+            if (prevScreenState != ScreenState.SCREEN_ON_BEFORE_IQAMA) {
+                renderPrayerTimes(newDisplayInformation.timeInformation);
+                playSoundTwoBeep();
+                $("#black_cover").css("display", "none");
+                $("#cover").css("display", "none");
+                $("#time_rem").css("display", "none");
+                $("#before_iqama").css("display", "flex");
+            }
+            let timeToIqamaWithSec = getTimeToIqamaWithSec(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
+            let timeToIqamaPercent = getTimeToIqamaPercent(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
+            $("#time_rem_iqama").html("-" + timeToIqamaWithSec);
+            updateProgressBar(timeToIqamaPercent, timeToIqamaWithSec);
+            break;
+        case ScreenState.SCREEN_ON_SALAT:
+            if (prevScreenState != ScreenState.SCREEN_ON_SALAT) {
+                renderPrayerTimes(newDisplayInformation.timeInformation);
+                playSoundFourBeep();
+                $("#black_cover").css("display", "none");
+                $("#cover").css("display", "block");
+            }
+            break;
+        case ScreenState.SCREEN_ON_AFTER_SALAT:
+            if (prevScreenState != ScreenState.SCREEN_ON_AFTER_SALAT) {
+                renderPrayerTimes(newDisplayInformation.timeInformation);
+                $("#black_cover").css("display", "none");
+                $("#cover").css("display", "none");
+                $("#before_iqama").css("display", "none")
+                $("#time_rem").css("display", "flex");
+            }
+            renderTimeRemainingPrayerName(newDisplayInformation)
+            break;
+        default:
+            break;
+    }
+    renderCurrentDateAndTime(newDisplayInformation.timeInformation);
+}
+
+function renderTimeRemainingPrayerName(newDisplayInformation) {
+    hourToNext = Math.floor(newDisplayInformation.prayerInformation.minuteToNext / 60);
+    minuteAfterHourToNext = newDisplayInformation.prayerInformation.minuteToNext % 60;
+    $("#time_rem_prayer_name").html(newDisplayInformation.prayerInformation.nameNext)
+    $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteAfterHourToNext))
+    $("#time_rem_prayer_name_ar").html(newDisplayInformation.prayerInformation.nameNextAr)
+     
+}
+
+function renderCurrentDateAndTime(timeInformation) {
+    $("#time").html(timeInformation.h + ":" + timeInformation.m)
+    $("#date_nl_box").html(weekDaysNL[timeInformation.date.getDay()] + " " + timeInformation.dd + " " + monthsNL[timeInformation.date.getMonth()] + " " + timeInformation.YY)
+}
+
+function calculateWhatToShow(timeInformation) {
     //countdown
-    var prayerTimes = getPrayerNamesAndTime(prayerTimeData, t);
+    var prayerTimes = getPrayerNamesAndTime(prayerTimeData, timeInformation);
     var idx = -1;
-    var current = t.h + ":" + t.m;
+    var current = timeInformation.h + ":" + timeInformation.m;
     for (var i = 0; i < 5; i++) {
         if (current < prayerTimes.times[i]) {
             break;
@@ -190,71 +206,65 @@ function calculateWhatToShow(date) {
     var namePrev = prayerTimes.names[prevIdx];
     var minuteFromPrev = Math.abs(timeDiffInMinute(timePrev, current));
     var minuteToNext = 0
-
+    let nameNext, nameNextAr;
 
     if (nextIdx === 5) {
         // tomorrow fajr time
-        var tomorrow = addDays(t.date, 1)
-        var tmm = tomorrow.getMonth() + 1;
-        var tdd = tomorrow.getDate();
-        var prayerTime = prayerTimeData.times[tmm][tdd].p1.t;
-        var timeToNext = timeDiffInMinute(current, prayerTime)
+        let tomorrow = addDays(timeInformation.date, 1)
+        let tmm = tomorrow.getMonth() + 1;
+        let tdd = tomorrow.getDate();
+        let prayerTime = prayerTimeData.times[tmm][tdd].p1.t;
+        let timeToNext = timeDiffInMinute(current, prayerTime)
         if (timeToNext < 0) {
-          timeToNext = 24 * 60 + timeToNext;
+            timeToNext = 24 * 60 + timeToNext;
         }
-        var minuteToNext = timeToNext;
+        minuteToNext = timeToNext;
+        nameNext = prayerTimes.names[0];
+        nameNextAr = prayerTimes.namesAr[0];
 
     } else {
-        var timeNext = prayerTimes.times[nextIdx];
+        let timeNext = prayerTimes.times[nextIdx];
         minuteToNext = Math.abs(timeDiffInMinute(current, timeNext));
+        nameNext = prayerTimes.names[nextIdx];
+        nameNextAr = prayerTimes.namesAr[nextIdx];
     }
+    let prayerInformation = new PrayerInformation(prevIdx, namePrev, timePrev, minuteFromPrev, nextIdx, nameNext, nameNextAr, minuteToNext)
+    let newScreenState = getScreenStateToShow(prayerInformation)
+    return new DisplayInformation(newScreenState, timeInformation, prayerInformation)    
+}
 
-    waitingTimeMinute = WAITING_TIME
-    if (prevIdx == 3) {
+function getScreenStateToShow(prayerInformation) {
+    let waitingTimeMinute = WAITING_TIME
+    if (prayerInformation.prevIdx == 3) {
         waitingTimeMinute = 7;
     }
-    prayerONTime = waitingTimeMinute + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
-
-    if (namePrev === "Jumu'ah" && minuteFromPrev < 60) {
-        return CurrentScreen.SCREEN_OFF_BLACK 
-    } else if (minuteFromPrev > prayerONTime && minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME) {
-        return CurrentScreen.SCREEN_OFF_BLACK
-    } else if (minuteToNext <= BEFORE_PRAYER_DISPLAY_ON_TIME) {
-        return CurrentScreen.SCREEN_ON_BEFORE_AZAAN
-    } else if (minuteFromPrev < waitingTimeMinute) {
-        return CurrentScreen.SCREEN_ON_BEFORE_IQAMA
-    } else if (minuteFromPrev < (waitingTimeMinute + PRAYER_TIME)) {
-        return CurrentScreen.SCREEN_ON_SALAT
+    let prayerONTime = waitingTimeMinute + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
+    let keyPressedSinceMinute = (Date.now() - lastKeyPressedTime.getTime()) / 60000;
+    if (prayerInformation.namePrev === "Jumu'ah" && 
+        prayerInformation.minuteFromPrev < 60 && 
+        keyPressedSinceMinute >= 5) {
+        return ScreenState.SCREEN_OFF_BLACK
+    } else if (prayerInformation.minuteFromPrev > prayerONTime && 
+        prayerInformation.minuteToNext > BEFORE_PRAYER_DISPLAY_ON_TIME && 
+        keyPressedSinceMinute >= 5) {
+        return ScreenState.SCREEN_OFF_BLACK
+    } else if (prayerInformation.minuteToNext <= BEFORE_PRAYER_DISPLAY_ON_TIME) {
+        return ScreenState.SCREEN_ON_BEFORE_AZAAN
+    } else if (prayerInformation.minuteFromPrev < waitingTimeMinute) {
+        return ScreenState.SCREEN_ON_BEFORE_IQAMA
+    } else if (prayerInformation.minuteFromPrev < (waitingTimeMinute + PRAYER_TIME)) {
+        return ScreenState.SCREEN_ON_SALAT
     } else {
-        return CurrentScreen.SCREEN_ON_AFTER_SALAT
+        return ScreenState.SCREEN_ON_AFTER_SALAT
     }
 }
 
-function playSoundFourBeep(){
+function playSoundFourBeep() {
     soundFourBeep.play();
-    //new Audio("audio/four_beep.mp3").play();
 }
 
-function playSoundTwoBeep(){
+function playSoundTwoBeep() {
     soundTwoBeep.play();
-    //new Audio("audio/two_beep.mp3").play();
-}
-
-function getFormattedTimes(today) {
-    var t = {}
-    h = today.getHours();
-    m = today.getMinutes();
-    s = today.getSeconds();
-    t.h = checkTime(h);
-    t.m = checkTime(m);
-    t.s = checkTime(s);
-    t.YY = today.getFullYear();
-    t.mm = today.getMonth() + 1;
-    t.dd = today.getDate();
-    t.MM = checkTime(t.mm);
-    t.DD = checkTime(t.dd);
-    t.date = today
-    return t;
 }
 
 
@@ -284,101 +294,6 @@ function getPrayerNamesAndTime(jsonObj, t) {
     return tx
 }
 
-function renderTimeAndDate(t) {
-    $("#time").html(t.h + ":" + t.m)
-    $("#date_nl_box").html(weekDaysNL[t.date.getDay()] + " " + t.dd + " " + monthsNL[t.date.getMonth()] + " " + t.YY)
-}
-
-function renderSlalatTimeDisplay(timeFromPrev, namePrev, timeToIqamaPercent, timeToIqamaWithSec, isPrevJuma) {
-    var timeSinceAzaan = Math.abs(timeFromPrev);
-    //$("#time_rem").html(namePrev + "<br/>-00:00");
-    if (timeSinceAzaan < WAITING_TIME && !isPrevJuma) {
-        $("#time_rem").css("display", "none");
-        $("#before_iqama").css("display","flex");
-        $("#time_rem_iqama").html("-"+timeToIqamaWithSec);
-        updateProgressBar(timeToIqamaPercent, timeToIqamaWithSec);
-        /*
-        $("#time_rem_prayer_name").html("Iqama")
-        $("#time_rem_time").html("-" + timeFromPrevWithSec)
-        $("#time_rem_prayer_name_ar").html("إقامة")*/
-    } else {
-        $("#cover").css("display", "block");
-    }
-    //set 100 to make sure display off works in juma time
-    saveEnergy(timeFromPrev, 100, WAITING_TIME, isPrevJuma);
-}
-
-function renderTomorrowFadjrTime(jsonObj, t, current, prayerTimes, timeFromPrev) {
-    //tomorrow Fadjr
-    var tomorrow = addDays(t.date, 1)
-    var tmm = tomorrow.getMonth() + 1;
-    var tdd = tomorrow.getDate();
-    var prayerTime = jsonObj.times[tmm][tdd].p1.t;
-    var timeToNext = timeDiffInMinute(current, prayerTime)
-    if (timeToNext < 0) {
-        timeToNext = 24 * 60 + timeToNext;
-    }
-    var hourToNext = Math.floor(timeToNext / 60);
-    var minuteToNext = timeToNext % 60;
-    var nameNext = prayerTimes.names[0];
-    var nameNextAr = prayerTimes.namesAr[0];
-    $("#time_rem").css("background-color", "#f2e8e2");
-    $("#time_rem_prayer_name").html(nameNext)
-    $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
-    $("#time_rem_prayer_name_ar").html(nameNextAr)
-    saveEnergy(timeFromPrev, timeToNext, WAITING_TIME, 0);
-}
-
-function renderCurrentTime(date) {
-    var t = getFormattedTimes(date);
-    renderTimeAndDate(t);
-
-    //countdown
-    var prayerTimes = getPrayerNamesAndTime(prayerTimeData, t);
-    var idx = -1;
-    var current = t.h + ":" + t.m;
-    const currentTime = t;
-    for (var i = 0; i < 5; i++) {
-        if (current < prayerTimes.times[i]) {
-            break;
-        }
-        idx = i;
-    }
-    var prevIdx = (idx + 5) % 5;
-    var nextIdx = idx + 1;
-    var timePrev = prayerTimes.times[prevIdx];
-    var namePrev = prayerTimes.names[prevIdx];
-    $("#cover").css("display", "none");
-    var timeFromPrev = timeDiffInMinute(timePrev, current);
-    if (prevIdx == 3) {
-        WAITING_TIME = 7;
-    } else {
-        WAITING_TIME = 10;
-    }
-    if (Math.abs(timeFromPrev) < (PRAYER_TIME + WAITING_TIME)) {
-        var timeToIqamaWithSec = getTimeToIqamaWithSec(timePrev, date)
-        var timeToIqamaPercent = getTimeToIqamaPercent(timePrev, date)
-        renderSlalatTimeDisplay(timeFromPrev, namePrev, timeToIqamaPercent, timeToIqamaWithSec, namePrev === "Jumu'ah");
-    } else if (nextIdx == 5) {
-        $("#before_iqama").css("display","none")
-        $("#time_rem").css("display", "flex");
-        renderTomorrowFadjrTime(prayerTimeData, t, current, prayerTimes, timeFromPrev);
-    } else {
-        $("#before_iqama").css("display","none")
-        $("#time_rem").css("display", "flex");
-        $("#time_rem").css("background-color", "#f2e8e2");
-        var timeNext = prayerTimes.times[nextIdx];
-        var nameNext = prayerTimes.names[nextIdx];
-        var nameNextAr = prayerTimes.namesAr[nextIdx];
-        var timeToNext = timeDiffInMinute(current, timeNext)
-        var hourToNext = Math.floor(timeToNext / 60);
-        var minuteToNext = timeToNext % 60;
-        $("#time_rem_prayer_name").html(nameNext)
-        $("#time_rem_time").html("-" + checkTime(hourToNext) + ":" + checkTime(minuteToNext))
-        $("#time_rem_prayer_name_ar").html(nameNextAr)
-        saveEnergy(timeFromPrev, timeToNext, WAITING_TIME, namePrev === "Jumu'ah");
-    }
-}
 
 function addDays(date, days) {
     var result = new Date(date);
@@ -431,21 +346,18 @@ function getTimeToIqamaPercent(prayerTime, t1) {
     t2.setDate(t1.getDate());
     t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0);
 
-    delta = Math.abs(t2 - t1) ;
-    waitingTimeMs = WAITING_TIME * 60 * 1000 ;
+    delta = Math.abs(t2 - t1);
+    waitingTimeMs = WAITING_TIME * 60 * 1000;
     if (delta > waitingTimeMs) {
         return 100
-    } 
+    }
     return delta * 100 / waitingTimeMs;
 }
 
-
-
-
-function renderPrayerTimes(date) {
+function renderPrayerTimes(timeInformation) {
     if (prayerTimeData == null)
         return;
-    var today = date;
+    var today = timeInformation.date;
     var mm = today.getMonth() + 1;
     var dd = today.getDate();
     prayerTimes = prayerTimeData.times[mm][dd];
@@ -471,16 +383,16 @@ function checkTime(i) {
 }
 
 function updateProgressBar(progress, timeToIqamaWithSec) {
-    $("#progress").css("width",progress+"%");
+    $("#progress").css("width", progress + "%");
     mmss = timeToIqamaWithSec.split(":")
     if (mmss[0] == "00") {
-        $("#progress").css("background-color","orange")
+        $("#progress").css("background-color", "orange")
     } else {
-        $("#progress").css("background-color","#4CAF50")
+        $("#progress").css("background-color", "#4CAF50")
     }
-  }
+}
 
 //switch display on key press
 window.addEventListener("keydown", function (event) {
-    switchDisplayOn();
+    lastKeyPressedTime = new Date()
 }, true);

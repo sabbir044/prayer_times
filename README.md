@@ -1,15 +1,15 @@
 # prayer_times
-# package
-electron-packager . prayer_time --platform=linux --arch=armv7l --out=out --overwrite
+# package in a linux machine to deb format
+npm run make
 
 # install
-Application binary is in
-/home/pi/prayer_time/prayer_time-linux-armv7l/
-This is the <application_folder>.
-folder. To replace code, we can just replace the code under <application_folder>/resources/app/ folder.
+copy the out/make/deb/armv7l/prayer-time_0.0.0_armhf.deb file to the raspberry pi. 
+Run: dpkg -i prayer-time_0.0.0_armhf.deb
+It should install the application in the pi
 
 # update the file
-Current prayer time file is <application_folder>/resources/app/prayer_times_2021.json. Replacing this with a new file will update the times.
+
+todo
 
 # how to run gui app in raspberry pi on startup
 I learned it from this blog: https://jsakov.medium.com/linux-start-an-application-automatically-at-boot-2b6fb61524d7.

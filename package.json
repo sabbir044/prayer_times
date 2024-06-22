@@ -1,7 +1,8 @@
 {
   "name": "prayer_time",
   "dependencies": {
-    "cec-controller": "^1.4.0"
+    "cec-controller": "^1.4.0",
+    "node-schedule": "^2.1.1"
   },
   "scripts": {
     "start": "electron-forge start",

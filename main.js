@@ -1,25 +1,38 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
 var fs = require('fs');
+const schedule = require('node-schedule');
+
 
 //load json file
 var jsonObj
-try {
-    fileName = `${__dirname}/prayer_times.json`
-    year = new Date().getFullYear()
-    yearFileName = `${__dirname}/prayer_times_${year}.json`
-    fileName = yearFileName
-    if (app.commandLine.hasSwitch('file') === true) {
-        fileName = app.commandLine.getSwitchValue('file')
-        console.log("fileswitch value: " + fileName)
+var currentFileName = ""
+var lastUpdatedFileName = ""
+
+function loadFileToJsonObj() {
+    try {
+        console.log("trying to load praer_times json file")
+        fileName = `${__dirname}/prayer_times.json`
+        year = new Date().getFullYear()
+        yearFileName = `${__dirname}/prayer_times_${year}.json`
+        fileName = yearFileName
+        if (currentFileName !== fileName) {
+            if (app.commandLine.hasSwitch('file') === true) {
+                fileName = app.commandLine.getSwitchValue('file')
+                console.log("fileswitch value: " + fileName)
+            }
+            console.log("loading new file: " + fileName)
+            var jsonStr = fs.readFileSync(fileName, 'utf8')
+            jsonObj = JSON.parse(jsonStr);
+            currentFileName = fileName
+        }
+    } catch (error) {
+        console.log("Unable to open file")
+        console.log(error)
     }
-    console.log("filename: " + fileName)
-    var jsonStr = fs.readFileSync(fileName, 'utf8')
-    jsonObj = JSON.parse(jsonStr);
-} catch (error) {
-    console.log("Unable to open file")
-    console.log(error)
 }
+
+loadFileToJsonObj()
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -35,7 +48,7 @@ const createWindow = () => {
             nodeIntegration: true,
             contextIsolation: false
         },
-        kiosk: true
+        kiosk: false
     });
 
     // and load the index.html of the app.
@@ -53,8 +66,12 @@ const createWindow = () => {
     });
 
     mainWindow.webContents.on('did-finish-load', () => {
-        if (jsonObj != null)
-            mainWindow.webContents.send('prayer-times', jsonObj);
+        if (jsonObj != null) {
+            mainWindow.webContents.send('prayer-times-start', jsonObj);
+            lastUpdatedFileName = currentFileName
+        } else {
+            console.log("jsonObj is null")
+        }
     });
     mainWindow.maximize()
 
@@ -84,3 +101,14 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+// try to load file every day at 12 AM if needed
+const job = schedule.scheduleJob('0 0 0 * *', function(){
+    loadFileToJsonObj()
+   // mainWindow.webContents.send('updated-prayer-times', jsonObj);
+    if (lastUpdatedFileName !== "" && lastUpdatedFileName !== currentFileName) {
+        console.log("sending updated-prayer-times with new file name" + currentFileName)
+        mainWindow.webContents.send('updated-prayer-times', jsonObj);
+        lastUpdatedFileName = currentFileName
+    }
+});

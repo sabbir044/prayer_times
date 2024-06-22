@@ -3,11 +3,17 @@ const { ipcRenderer } = require('electron')
 
 var prayerTimeData = null;
 
-ipcRenderer.on('prayer-times', (event, arg) => {
+ipcRenderer.on('prayer-times-start', (event, arg) => {
     prayerTimeData = arg;
     playSoundFourBeep();
     renderUI();
 });
+
+ipcRenderer.on('updated-prayer-times', (event, arg) => {
+    console.log("got updated prayer times")
+    prayerTimeData = arg;
+});
+
 class ScreenState {
     static SCREEN_OFF_BLACK = new ScreenState("OFF_BLACK");
     static SCREEN_ON_BEFORE_AZAAN = new ScreenState("ON_BEFORE_AZAAN");

@@ -10,7 +10,7 @@
     "make": "electron-forge make --arch=armv7l"
   },
   "main": "main.js",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "description": "parayer time app",
   "author": "Sabbir Ahmed",

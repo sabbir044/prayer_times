@@ -93,7 +93,7 @@ const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
 var isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false
-var testDate = new Date("2025-01-25T06:43:50");
+var testDate = new Date("2025-01-25T06:54:30");
 var baseDate = new Date();
 var currentScreenState = ScreenState.SCREEN_OFF_BLACK;
 
@@ -158,7 +158,7 @@ function showUIState(newDisplayInformation, prevScreenState) {
             let timeToIqamaPercent = getTimeToIqamaPercent(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
             $("#time_rem_iqama").html("-" + timeToIqamaWithSec);
             updateProgressBar(timeToIqamaPercent, timeToIqamaWithSec);
-            if (timeToIqamaWithSec === "00:05") {
+            if (timeToIqamaWithSec === "00:20") {
                 playSoundNoBeep()
             }
             break;
@@ -279,6 +279,7 @@ function playSoundTwoBeep() {
 }
 
 function playSoundNoBeep() {
+    console.log("playing no beep")
     soundNoBeep.play();
 }
 

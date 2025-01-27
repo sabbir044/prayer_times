@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
 var fs = require('fs');
-
+var isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false;
 //load json file
 var jsonObj
 try {
@@ -35,7 +35,7 @@ const createWindow = () => {
             nodeIntegration: true,
             contextIsolation: false
         },
-        kiosk: true
+        kiosk: isDev?false:true
     });
 
     // and load the index.html of the app.

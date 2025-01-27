@@ -4,12 +4,14 @@
     "cec-controller": "^1.4.0"
   },
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package --arch=armv7l",
-    "make": "electron-forge make --arch=armv7l"
+    "start": "APP_DEV=true electron-forge start",
+    "package-arm": "electron-forge package --arch=armv7l",
+    "make-arm": "electron-forge make --arch=armv7l",
+    "package-x64": "electron-forge package --arch=x64",
+    "make-x64": "electron-forge make --arch=x64"
   },
   "main": "main.js",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "license": "MIT",
   "description": "parayer time app",
   "author": "Sabbir Ahmed",

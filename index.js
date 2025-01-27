@@ -6,6 +6,8 @@ var prayerTimeData = null;
 ipcRenderer.on('prayer-times', (event, arg) => {
     prayerTimeData = arg;
     playSoundFourBeep();
+    playSoundNoBeep();
+    playSoundTwoBeep();
     renderUI();
 });
 class ScreenState {
@@ -54,6 +56,7 @@ class PrayerInformation {
     nameNext;
     nameNextAr;
     minuteToNext;
+    secondsToNext;
 
     constructor(prevIdx, namePrev, timePrev, minuteFromPrev,nextIdx, nameNext, nameNextAr, minuteToNext) {
         this.prevIdx = prevIdx;
@@ -89,13 +92,15 @@ const BEFORE_PRAYER_DISPLAY_ON_TIME = 30;
 const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
-var testDate = new Date("2023-04-22T13:45:50");
+var isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false
+var testDate = new Date("2025-01-25T06:43:50");
 var baseDate = new Date();
 var currentScreenState = ScreenState.SCREEN_OFF_BLACK;
 
-var soundFourBeep = new Audio("audio/four_beep.mp3");
-var soundTwoBeep = new Audio("audio/two_beep.mp3");
-
+basePath = isDev ? __dirname + '/resources/audio' : process.resourcesPath + '/audio'
+var soundFourBeep = new Audio(basePath + '/four_beep.mp3');
+var soundTwoBeep = new Audio(basePath + '/two_beep.mp3');
+var soundNoBeep = new Audio(basePath + '/no_beep.mp3');
 
 var lastMonitorOffTime = new Date();
 lastMonitorOffTime.setDate(lastMonitorOffTime.getDate() - 1);
@@ -105,9 +110,11 @@ function renderUI() {
     var beginTime = new Date()
     var now = new Date();
     /**** test code  ***/
-    // sinceBase  = now.valueOf() - baseDate.valueOf()
-    // testWithSince  = testDate.valueOf() + sinceBase
-    // now = new Date(testWithSince);
+    if (isDev) {
+        sinceBase  = now.valueOf() - baseDate.valueOf()
+        testWithSince  = testDate.valueOf() + sinceBase
+        now = new Date(testWithSince);
+    }
     /*** test code finish ***/
 
     //
@@ -123,6 +130,7 @@ function renderUI() {
 }
 
 function showUIState(newDisplayInformation, prevScreenState) {
+    var timeToIqamaWithSec;
     switch (newDisplayInformation.screenState) {
         case ScreenState.SCREEN_OFF_BLACK:
             $("#black_cover").css("display", "block");
@@ -146,10 +154,13 @@ function showUIState(newDisplayInformation, prevScreenState) {
                 $("#time_rem").css("display", "none");
                 $("#before_iqama").css("display", "flex");
             }
-            let timeToIqamaWithSec = getTimeToIqamaWithSec(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
+            timeToIqamaWithSec = getTimeToIqamaWithSec(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
             let timeToIqamaPercent = getTimeToIqamaPercent(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
             $("#time_rem_iqama").html("-" + timeToIqamaWithSec);
             updateProgressBar(timeToIqamaPercent, timeToIqamaWithSec);
+            if (timeToIqamaWithSec === "00:05") {
+                playSoundNoBeep()
+            }
             break;
         case ScreenState.SCREEN_ON_SALAT:
             if (prevScreenState != ScreenState.SCREEN_ON_SALAT) {
@@ -267,6 +278,9 @@ function playSoundTwoBeep() {
     soundTwoBeep.play();
 }
 
+function playSoundNoBeep() {
+    soundNoBeep.play();
+}
 
 function getPrayerNamesAndTime(jsonObj, t) {
     var prayerNames = ["Fadjr", "", "Dohr", "Asr", "Maghreb", "Isha", "Jumu'ah"];

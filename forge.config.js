@@ -5,6 +5,7 @@ module.exports = {
   packagerConfig: {
     name: 'prayer_time',
     asar: true,
+    extraResource: "resources/audio",
   },
   rebuildConfig: {},
   makers: [

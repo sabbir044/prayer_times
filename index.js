@@ -85,6 +85,7 @@ var weekDaysNL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrij
 var monthsNL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 
 var WAITING_TIME = 10;
+var WAITING_TIME_MAGHRIB = 7;
 
 //constants
 const AFTER_PRAYER_DISPLAY_ON_TIME = 20; //make it 20 minutes
@@ -93,7 +94,7 @@ const JUMA_PRAYER_DISPLAY_ON_TIME = -1;
 const PRAYER_TIME = 15;
 
 var isDev = process.env.APP_DEV ? (process.env.APP_DEV.trim() == "true") : false
-var testDate = new Date("2025-01-25T06:54:30");
+var testDate = new Date("2025-05-04T21:10:59");
 var baseDate = new Date();
 var currentScreenState = ScreenState.SCREEN_OFF_BLACK;
 
@@ -154,8 +155,8 @@ function showUIState(newDisplayInformation, prevScreenState) {
                 $("#time_rem").css("display", "none");
                 $("#before_iqama").css("display", "flex");
             }
-            timeToIqamaWithSec = getTimeToIqamaWithSec(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
-            let timeToIqamaPercent = getTimeToIqamaPercent(newDisplayInformation.prayerInformation.timePrev, newDisplayInformation.timeInformation.date)
+            timeToIqamaWithSec = getTimeToIqamaWithSec(newDisplayInformation.prayerInformation, newDisplayInformation.timeInformation.date)
+            let timeToIqamaPercent = getTimeToIqamaPercent(newDisplayInformation.prayerInformation, newDisplayInformation.timeInformation.date)
             $("#time_rem_iqama").html("-" + timeToIqamaWithSec);
             updateProgressBar(timeToIqamaPercent, timeToIqamaWithSec);
             if (timeToIqamaWithSec === "00:20") {
@@ -247,7 +248,8 @@ function calculateWhatToShow(timeInformation) {
 function getScreenStateToShow(prayerInformation) {
     let waitingTimeMinute = WAITING_TIME
     if (prayerInformation.prevIdx == 3) {
-        waitingTimeMinute = 7;
+        // special waiting time for Mahgrib
+        waitingTimeMinute = WAITING_TIME_MAGHRIB;
     }
     let prayerONTime = waitingTimeMinute + PRAYER_TIME + AFTER_PRAYER_DISPLAY_ON_TIME
     let keyPressedSinceMinute = (Date.now() - lastKeyPressedTime.getTime()) / 60000;
@@ -324,13 +326,20 @@ function timeDiffInMinute(from, to) {
     return diffMins;
 }
 
-function getTimeToIqamaWithSec(prayerTime, t1) {
+function getTimeToIqamaWithSec(prayerInformation, t1) {
+    prayerTime = prayerInformation.timePrev
     hhmm = prayerTime.split(":")
+
+    waitingTime = WAITING_TIME
+    if (prayerInformation.prevIdx == 3) {
+        // special waiting time for Mahgrib
+        waitingTime = WAITING_TIME_MAGHRIB
+    }
 
     var t2 = new Date();
     t2.setMonth(t1.getMonth());
     t2.setDate(t1.getDate());
-    t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0);
+    t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + waitingTime, 0);
 
     delta = Math.floor(Math.abs(t2 - t1) / 1000);
     // calculate (and subtract) whole days
@@ -353,16 +362,23 @@ function getTimeToIqamaWithSec(prayerTime, t1) {
     return `${minutes}:${seconds}`
 }
 
-function getTimeToIqamaPercent(prayerTime, t1) {
+function getTimeToIqamaPercent(prayerInformation, t1) {
+    prayerTime = prayerInformation.timePrev
     hhmm = prayerTime.split(":")
+
+    waitingTime = WAITING_TIME
+    if (prayerInformation.prevIdx == 3) {
+        // special waiting time for Mahgrib
+        waitingTime = WAITING_TIME_MAGHRIB
+    }
 
     var t2 = new Date();
     t2.setMonth(t1.getMonth());
     t2.setDate(t1.getDate());
-    t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + WAITING_TIME, 0);
+    t2.setHours(parseInt(hhmm[0]), parseInt(hhmm[1]) + waitingTime, 0);
 
     delta = Math.abs(t2 - t1);
-    waitingTimeMs = WAITING_TIME * 60 * 1000;
+    waitingTimeMs = waitingTime * 60 * 1000;
     if (delta > waitingTimeMs) {
         return 100
     }
